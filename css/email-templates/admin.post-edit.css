@@ -1,0 +1,189 @@
+#titlediv #title, #inbound-email-templates-notes-area input {
+background-color: #fff;
+border: none;
+}
+#wpbody-content {
+overflow: visible !important;
+}
+#inbound-email-templates-notes-area input {
+	width: 95%;
+	color: #AAAAAA;
+	height: 25px;
+	padding: 11px;
+	padding-top: 13px;
+	border: 1px solid #ccc;
+}
+#inbound-email-templates-notes-area input:focus{
+	color: #000;
+}
+#local-storage-notice {
+	display: none !important;
+}
+#wp_cta_clean-cta_custom_meta_box h3.hndle {
+	background-color: transparent !important;
+}
+.inbound-email-templates-option-area.field-checkbox {
+	vertical-align: bottom;
+}
+
+#poststuff {
+	padding-top: 0px;
+}
+
+#titlediv #title {
+	background-color: transparent;
+	border: none;
+	box-shadow: none;
+	margin-bottom: 5px;
+}
+
+#titlediv #title:focus, #inbound-email-templates-notes-area input:focus{
+  border: solid 1px #dfdfdf;
+  background: #fff;
+}
+
+#wp_cta_metabox_select_template .handlediv {
+	display: none;
+}
+
+.inbound-multi-select {
+	min-width: 60%;
+}
+
+.template-thumbnail {
+	width: 242px;
+	border-radius: 0px !important;
+}
+
+
+#inbound-email-templates-change-template-button {
+	margin-top: 7px;
+}
+
+#wp_cta_popup-ebook_custom_meta_box .hndle {
+	background-color: transparent !important;
+}
+
+.inbound-email-templates-delete-var-stats, .inbound-email-templates-clear-success {
+	color: red;
+	opacity: .7;
+	font-size: 9px;
+	float: right;
+	font-weight: normal;
+}
+.inbound-email-templates-clear-success{
+	color: green;
+}
+.inbound-email-templates-option-row {
+	padding-bottom: 15px;
+}
+.wp_cta_label {
+	display: inline-block;
+	width: 14%;
+	vertical-align: top;
+	padding-top: 8px;
+	margin-left: 10px;
+}
+.inbound-email-templates-option-area {
+	display: inline-block;
+	width: 60%;
+}
+#page-cat-tag, .calc.button-secondary {
+display: none !important;
+}
+.calc.button-secondary {
+	display: inline-block;
+width: 141px;
+text-align: center;
+margin-top: -1px;
+margin-bottom: 0px;
+margin-left: 8px;
+}
+tr.description th.description-label {
+	display: none;
+}
+#post-body-content .a_b_tabs {
+padding: 0px;
+margin-bottom: 9px;
+margin-left: -18px;
+padding-left: 22px;
+margin-top: 5px;
+margin-right: -20px;
+position: relative;
+}
+#wp-wp-call-to-action-myeditor-wrap #wp-call-to-action-myeditor_path_row {
+  display: none;
+}
+#wp-wp-call-to-action-myeditor-wrap #wp-wp-call-to-action-myeditor-editor-container {
+  min-height: 200px;
+}
+#adminmenu .wp-menu-arrow div {
+left: -2px;
+  }
+#add-inbound-email-templates-notes {
+	display: none;
+vertical-align: middle;
+font-weight: 600;
+padding-right: 2px;
+}
+.add-new-h2, #inbound-email-templates-current-view, #switch-inbound-email-templates, #preview-action {
+  display: none;
+}
+#inbound-email-templates-notes-area {
+	position: relative;
+	margin-bottom: 8px;
+}
+#post-body-content #main-title-area {
+margin-top: 5px;
+margin-bottom: 15px;
+position: relative;
+}
+#main-title-area .button-primary.new-save-inbound-email-templates {
+position: absolute !important;
+top: 1px !important;
+font-size: 17px !important;
+padding-top: 3px !important;
+right: 0px !important;
+height: 31px !important;
+width: 70px !important;
+}
+#inbound-email-templates-notes-area .button-primary.new-save-inbound-email-templates {
+	position: absolute !important;
+	top: 0px !important;
+	font-size: 14px !important;
+	padding-top: 0px !important;
+	right: -2px !important;
+	height: 28px !important;
+	width: 71px !important;
+}
+
+#main-title-area .inbound-email-templates-success-message, #inbound-email-templates-notes-area .inbound-email-templates-success-message {
+	position: absolute !important;
+	top: 1px !important;
+	font-size: 11px !important;
+	padding-top: 3px !important;
+	right: -3px !important;
+	height: 21px !important;
+	vertical-align: middle;
+	margin-top: 0px;
+	padding-bottom: 0px;
+}
+
+#main-title-area .button-primary.new-save-inbound-email-templates {
+	padding-top: 6px !important;
+}
+
+#main-title-area .inbound-email-templates-success-message {
+	margin-top: 4px;
+}
+
+#post-body .new-save-inbound-email-templates-frontend {
+	font-weight: 200;
+	top: 2px;
+	font-size: 14px;
+	margin-left: 21px;
+	line-height: 28px;
+	height: 30px;
+	float:right;
+	margin-right:19px;
+}
