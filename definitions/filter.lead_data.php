@@ -24,8 +24,8 @@ if ( !class_exists( 'Inbound_Automation_Filter_Lead_Data' ) ) {
 			/* Make Filters & Actions Extendable for this Filter */
 			$compare_args 	= 	array(	'greater-than' =>'Greater Than',
 							'less-than' => 'Less Than' ,
-							'contains' , 'Contains',
-							'equals' , 'Equals',
+							'contains' =>'Contains',
+							'equals' => 'Equals',
 						);
 						
 			$compare = apply_filters('automation_filter_lead_data_supports' , $compare_args );

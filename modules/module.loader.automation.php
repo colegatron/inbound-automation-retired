@@ -9,10 +9,10 @@ function Inbound_Automation_Load_Extensions() {
 
 class Inbound_Automation_Load_Extensions {
 
-	private static $instance;
-	private $triggers;
-	private $filters;
-	private $actions;
+	public static $instance;
+	public $triggers;
+	public $filters;
+	public $actions;
 	
 	public static function instance() {	
 		if ( ! isset( self::$instance ) && ! ( self::$instance instanceof Inbound_Automation_Load_Extensions ) )
@@ -24,9 +24,8 @@ class Inbound_Automation_Load_Extensions {
 			self::define_filters();
 			self::define_actions();
 
-			//self::apply_triggers();
 		}
-		
+
 		return self::$instance;
 	}
 	

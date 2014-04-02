@@ -19,8 +19,8 @@ if ( !class_exists( 'Inbound_Automation_Trigger_Store_Lead' ) ) {
 		public static function define_trigger( $triggers ) {
 			
 			/* Make Filters & Actions Extendable for this Trigger */
-			$filters = apply_filters('automation_save_lead_filters' , array( 'lead_data_map' , 'cookies' ) );
-			$actions = apply_filters('automation_save_lead_actions' , array( 'send_emai' ) );
+			$filters = apply_filters('automation_save_lead_filters' , array( 'lead_data' , 'cookies' ) );
+			$actions = apply_filters('automation_save_lead_actions' , array( 'send_email' ) );
 			
 			$triggers['save_lead'] = array (
 				'id' => 'save_lead',
