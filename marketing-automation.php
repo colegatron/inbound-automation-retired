@@ -15,21 +15,18 @@ switch (is_admin()) :
 	case true :
 
 		/* Load Post Type(s) */
-		include_once('modules/module.post-type.automation.php');
-		include_once('modules/module.post-type.email-template.php');
+		include_once('components/class.post-type.automation.php');
+		include_once('components/class.post-type.email-template.php');
 
 		/* Load Settings */
-		include_once('modules/module.loader.automation.php');
+		include_once('components/class.loader.automation.php');
 
 		/* Load Metaboxes */
-		include_once('modules/module.metaboxes.email-template.php');
-		include_once('modules/module.metaboxes.automation.php');
+		include_once('components/class.metaboxes.email-template.php');
+		include_once('components/class.metaboxes.automation.php');
 
 		/* Include Triggers */
 		include_once('definitions/trigger.save_lead.php');
-
-		/* Include Filters */
-		include_once('definitions/filter.lead_data.php');
 
 		/* Include Actions */
 		include_once('definitions/action.send_email.php');
@@ -37,9 +34,10 @@ switch (is_admin()) :
 
 	case false :
 		/* Load Post Type(s) */
-		include_once('modules/module.post-type.email-template.php');
+		include_once('components/class.post-type.email-template.php');
 
 		BREAK;
 endswitch;
 
 /* Load Cronjob Engine */
+include_once('components/class.cron.automation.php');
