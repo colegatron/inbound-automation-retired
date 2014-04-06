@@ -1,0 +1,160 @@
+
+/* Navigation */
+.nav-hide {
+	display:none;
+}
+
+.nav-reveal {
+	display:block;
+}
+
+
+/* Triggers */
+.table-trigger-container { 
+	width:100%;
+	padding-right:20px;
+	padding-left:20px;
+}
+
+.table-trigger-container .td-trigger-select{ 
+	width:144px;
+	padding-right:20px;
+	padding-left:20px;
+}
+
+.td-trigger-select-dropdown {
+	//padding:20px;
+}
+
+.trigger-container .label-big {
+	color:#darkslategrey;
+	padding-left:24px;
+	font-size:20px;
+}
+
+.table-trigger-container .td-trigger-select {
+	vertical-align:top;
+}
+
+.trigger-container .section-header {
+	width: 100%;
+	height: 50px;
+	line-height: 60px;
+	color: #999;
+	font-weight: 700;
+	font-size: 16px;
+	background: #fff;
+	display: block;
+	padding: 0 50px 0 30px;
+}
+
+/* Filters */
+.trigger-filter-evaluate {
+	margin-top:5px;
+	margin-bottom:5px;
+}
+
+.label-evaluate {
+	padding-left:7px;
+}
+
+.delete-filter {
+	cursor:pointer;
+}
+
+/* Actions */
+.full-row-button {
+	display: block;
+	width: 25%;
+	margin: 0 0 0px;
+	padding: 3px 20px;
+	height: auto;
+	text-align: center;
+	font-weight: bold;
+}
+
+.action-block {
+	margin-top:19px;
+	margin-bottom:77px;
+	width:100%;
+	margin-left:auto;
+}
+
+.action-block-separator {
+	color: #ccc;
+	margin-top:21px;
+	margin-bottom:21px;
+}
+
+.handle {
+	cursor:move;
+}
+
+.action-block-fieldset fieldset  /*, .actions-container fieldset*/ {
+	display: block;
+	-webkit-margin-start: 2px;
+	-webkit-margin-end: 2px;
+	-webkit-padding-before: 0.35em;
+	-webkit-padding-start: 0.75em;
+	-webkit-padding-end: 0.75em;
+	-webkit-padding-after: 0.625em;
+	border-color: #ccc;
+	border: 2px groove ;
+	border-image-source: initial;
+	border-image-slice: initial;
+	border-image-width: initial;
+	border-image-outset: initial;
+	border-image-repeat: initial;
+	min-width: -webkit-min-content;
+}
+
+/* Action Block - Action Settings */
+.table-action {
+	width:100%;
+}
+
+.highlight-container {
+	border-width:1px;
+	border-style:solid;
+	border-color:red;
+	background-color: rgba(red, .5);
+	border-collapse:separate;
+	border-spacing:10px 50px;
+
+}
+
+.action-delete {
+	width:100%;
+	top:0px;
+	text-align:right;
+	position:relative;
+	border-bottom: #000;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	cursor: move;
+	margin-bottom:10px;
+	
+}
+
+.action-block-delete {
+
+	top: -2px;
+	right: -21px;
+	cursor: pointer;
+	text-align:left;
+	display:inline;
+}
+
+.delete-img {
+	padding-left:10px;
+	cursor: pointer;
+}
+
+.td-action-setting-label {
+	width:200px;
+}
+
+.action-block-delete {
+	
+
+}
