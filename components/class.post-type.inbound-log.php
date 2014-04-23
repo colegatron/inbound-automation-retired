@@ -387,8 +387,8 @@ class Inbound_Logging {
 	* Setup Post Order 
 	*/
 	public static function set_post_order( $query ) {
-
-		if( is_admin() AND $query->query['post_type'] == 'inbound-log' ) {
+			
+		if( is_admin() && isset($query->query['post_type']) && $query->query['post_type'] == 'inbound-log' ) {
 			$query->set( 'order','desc' );
 			$query->set( 'orderby', 'ID');
 		}
@@ -402,8 +402,9 @@ class Inbound_Logging {
 		$transient = get_transient('inbound-prune-logs-last-run-date');
 
 		if (false === $transient) {
-
-			$logs = get_posts('post_type='.$the_type.'&order=ASC&orderby=post_date');
+			
+			$i = 0;
+			$logs = get_posts('post_type=inbound-log&order=ASC&orderby=post_date');
 	
 			foreach ($logs as $log) {
 				
@@ -415,9 +416,14 @@ class Inbound_Logging {
 				
 				if ($expire_date < $today) {
 
-					 wp_delete_post($post_id, true );
+					 wp_delete_post($log->ID, true );
+					 $i ++;
+					 
 				}
 			}				
+			
+			/* Create Log For Clearing Logs */
+			inbound_record_log(  'Clearning Logs Older Than 10 Days' , $i . ' logs cleared.' , 0 , 'action_event' );
 			
 			/* Set Transient to Expire Every 12 Hours */
 			set_transient( 'inbound-prune-logs-last-run-date', current_time('Y-m-d H:i:s') , 12 * HOUR_IN_SECONDS ); 
