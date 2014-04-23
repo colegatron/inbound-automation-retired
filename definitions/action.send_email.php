@@ -23,6 +23,7 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 
 			/* Build Action */
 			$actions['send_email'] = array (
+				'class_name' => get_class(),
 				'id' => 'send_email',
 				'label' => 'Send Email',
 				'description' => 'Send an email using available filter data.',
@@ -69,6 +70,17 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 			
 			return $email_templates;
 
+		}
+		
+		/*
+		* Sends the Email 
+		*/
+		public static function run_action( $action , $arguments ) {
+			
+			$arguments = $action['job']['arguments']; 
+			$action_encoded = json_encode($action) ;
+			inbound_record_log(  'Action Event - Send Email' , '<pre>'.$action_encoded.'</pre>' , $action['rule_id'] , 'action_event' );
+			
 		}
 
 	}

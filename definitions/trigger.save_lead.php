@@ -18,16 +18,17 @@ if ( !class_exists( 'Inbound_Automation_Trigger_Store_Lead' ) ) {
 		/* Build Trigger Definitions */
 		public static function define_trigger( $triggers ) {
 			
-			/* Make Filters & Actions Extendable for this Trigger */
-			$filters = apply_filters('automation_save_lead_filters' , array( 
-				array( 
-					'id' => 'lead_data',
-					'label' => 'Lead Data'
-				)
+			/* Extend Argument Setup */
+			$arguments = apply_filters('store_lead_arguments' , array( 
+					array( 
+						'id' => 'lead_data',
+						'label' => 'Lead Data'
+					)
 			) );
 			
-			$actions = apply_filters('automation_save_lead_actions' , array( 
-				'send_email' 
+			/* Extend Action Setup */
+			$actions = apply_filters('store_lead_actions' , array( 
+				'send_email' , 'wait'
 			) );
 			
 			$triggers['inbound_store_lead_post'] = array (
@@ -35,7 +36,7 @@ if ( !class_exists( 'Inbound_Automation_Trigger_Store_Lead' ) ) {
 				'description' => 'This trigger fires whenever a new lead is saved into the sytem.',
 				'action_hook' => 'inbound_store_lead_post',
 				'scheduling' => false,
-				'filters' => $filters,
+				'arguments' => $arguments,
 				'actions' => $actions
 			);
 			

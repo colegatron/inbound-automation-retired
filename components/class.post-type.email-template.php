@@ -27,7 +27,7 @@ if ( !class_exists('Inbound_Email_Templates_Post_Type') ) {
 				add_action( "manage_posts_custom_column", array( __CLASS__ , 'prepare_column_data' ) , 10, 2 );
 			
 				/* Define Sortable Columns */
-				add_filter( 'manage_edit-email_template_sortable_columns', array( __CLASS__ , 'define_sortable_columns' ) );
+				add_filter( 'manage_edit_email-template_sortable_columns', array( __CLASS__ , 'define_sortable_columns' ) );
 				
 				/* Filter Row Actions */
 				add_filter( 'post_row_actions' , array( __CLASS__ , 'filter_row_actions' ) , 10 , 2 );

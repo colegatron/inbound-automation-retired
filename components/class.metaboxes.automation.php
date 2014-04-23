@@ -173,7 +173,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							<select class='filter-select-dropdown' id='trigger-filter-select-dropdown' name='trigger-filters'  >
 								<option value="-1" class="">Select Filter</option>
 							</select>
-							<span class='button add-filter' id='' data-dropdown-id='trigger-filter-select-dropdown' data-filter-container='trigger-filters-container' data-filter-input-filter-type='trigger_filter_type' data-filter-input-key-name='trigger_filter_key' data-filter-input-compare-name='trigger_filter_compare' data-filter-input-value-name='trigger_filter_value'>
+							<span class='button add-filter' id='' data-dropdown-id='trigger-filter-select-dropdown' data-filter-container='trigger-filters-container' data-filter-input-filter-id='trigger_filter_id' data-filter-input-key-name='trigger_filter_key' data-filter-input-compare-name='trigger_filter_compare' data-filter-input-value-name='trigger_filter_value'>
 								Add Trigger Condition
 							</span>
 							<div class='trigger-filter-evaluate <?php if ( !isset( self::$trigger_filters ) ||  count(self::$trigger_filters) < 1 ) { echo 'nav-hide'; } ?>'>
@@ -188,10 +188,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 								foreach (self::$trigger_filters as $child_id => $filter) {
 
 									$args = array(
-										'filter_type' => $filter['filter_type'],
+										'filter_id' => $filter['filter_id'],
 										'action_block_id' => 0,
 										'child_id' => $child_id,
-										'input_name_filter_type' => 'trigger_filter_type',
+										'input_name_filter_id' => 'trigger_filter_id',
 										'input_name_filter_key' => 'trigger_filter_key',
 										'input_name_filter_compare' => 'trigger_filter_compare',
 										'input_name_filter_value' => 'trigger_filter_value',
@@ -279,7 +279,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				foreach ( $_POST['trigger_filter_key'] as $id => $value ) {
 
-					( isset( $_POST['trigger_filter_type'][$id] ) ) ? $filters[$id]['filter_type'] = $_POST['trigger_filter_type'][$id] : $filters[$id]['filter_type'] = null;
+					( isset( $_POST['trigger_filter_id'][$id] ) ) ? $filters[$id]['filter_id'] = $_POST['trigger_filter_id'][$id] : $filters[$id]['filter_id'] = null;
 					( isset( $_POST['trigger_filter_key'][$id] ) ) ? $filters[$id]['trigger_filter_key'] = $_POST['trigger_filter_key'][$id] : $filters[$id]['key'] = null;
 					( isset( $_POST['trigger_filter_compare'][$id] ) ) ? $filters[$id]['trigger_filter_compare'] = $_POST['trigger_filter_compare'][$id] : $filters[$id]['trigger_filter_compare'] = null;
 					( isset( $_POST['trigger_filter_value'][$id] ) ) ? $filters[$id]['trigger_filter_value'] = $_POST['trigger_filter_value'][$id] : $filters[$id]['value'] = null;
@@ -320,7 +320,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 						foreach ( $_POST['action_filter_value'][$block_id] as $id => $filter_value ) {
 
-							( isset( $_POST['action_filter_type'][$block_id][$id] ) ) ? $filters[$id]['filter_type'] = $_POST['action_filter_type'][$block_id][$id] : $filters[$id]['filter_type'] = null;
+							( isset( $_POST['action_filter_id'][$block_id][$id] ) ) ? $filters[$id]['filter_id'] = $_POST['action_filter_id'][$block_id][$id] : $filters[$id]['filter_id'] = null;
 							( isset( $_POST['action_filter_key'][$block_id][$id] ) ) ? $filters[$id]['action_filter_key'] = $_POST['action_filter_key'][$block_id][$id] : $filters[$id]['key'] = null;
 							( isset( $_POST['action_filter_compare'][$block_id][$id] ) ) ? $filters[$id]['action_filter_compare'] = $_POST['action_filter_compare'][$block_id][$id] : $filters[$id]['action_filter_compare'] = null;
 							( isset( $_POST['action_filter_value'][$block_id][$id] ) ) ? $filters[$id]['action_filter_value'] = $_POST['action_filter_value'][$block_id][$id] : $filters[$id]['value'] = null;
@@ -329,7 +329,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 					}
 
-					/* Add Filters to Action Block */
+					/* Add Filters to $action_blocks */
 					$action_blocks[$block_id]['filters'] = $filters;
 
 					/* Get Then Actions For This Block If They Exist */
@@ -340,7 +340,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						$Inbound_Automation =  Inbound_Automation_Load_Extensions();
 						$actions_definitions = $Inbound_Automation->actions;
 
-						foreach (	$_POST['action_name'][$block_id]['then'] as $child_id => $action_name ) {
+						foreach ( $_POST['action_name'][$block_id]['then'] as $child_id => $action_name ) {
 
 							$this_action = $actions_definitions[ $action_name ];
 
@@ -349,6 +349,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							}
 							
 							$actions[$child_id]['action_name'] = $action_name;
+							$actions[$child_id]['action_class_name'] = $this_action['class_name'];
 							
 							foreach ( $this_action['settings'] as $setting ) {
 
@@ -580,10 +581,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				jQuery('body').on( 'click' , '.add-filter' , function() {
 
 					var dropdown_id = jQuery(this).attr('data-dropdown-id');
-					var filter_type = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
+					var filter_id = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
 
 					var target_container = jQuery(this).attr('data-filter-container');
-					var filter_input_filter_type_name = jQuery(this).attr('data-filter-input-filter-type');
+					var filter_input_filter_id_name = jQuery(this).attr('data-filter-input-filter-id');
 					var filter_input_key_name = jQuery(this).attr('data-filter-input-key-name');
 					var filter_input_compare_name = jQuery(this).attr('data-filter-input-compare-name');
 					var filter_input_value_name = jQuery(this).attr('data-filter-input-value-name');
@@ -606,10 +607,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						 async:true,
 						 data : {
 							'action' : 'automation_build_filter',
-							'filter_type' : filter_type,
+							'filter_id' : filter_id,
 							'action_block_id' : null,
 							'child_id' : child_id,
-							'filter_input_filter_type_name' : filter_input_filter_type_name,
+							'filter_input_filter_id_name' : filter_input_filter_id_name,
 							'filter_input_key_name' : filter_input_key_name,
 							'filter_input_compare_name' : filter_input_compare_name,
 							'filter_input_value_name' : filter_input_value_name,
@@ -811,7 +812,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Filter</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-type='action_filter_type[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
 					$html .= "					Add Condition";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
@@ -828,10 +829,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						foreach ( $block['filters'] as $child_id => $filter ) {
 
 							$args = array(
-								'filter_type' => $filter['filter_type'],
+								'filter_id' => $filter['filter_id'],
 								'action_block_id' => $action_block_id,
 								'child_id' => $child_id,
-								'input_name_filter_type' => 'action_filter_type',
+								'input_name_filter_id' => 'action_filter_id',
 								'input_name_filter_key' => 'action_filter_key',
 								'input_name_filter_compare' => 'action_filter_compare',
 								'input_name_filter_value' => 'action_filter_value',
@@ -898,7 +899,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Filter</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-type='action_filter_type[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
 					$html .= "					Add Condition";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
@@ -915,10 +916,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						foreach ( $block['filters'] as $child_id => $filter ) {
 
 							$args = array(
-								'filter_type' => $filter['filter_type'],
+								'filter_id' => $filter['filter_id'],
 								'action_block_id' => $action_block_id,
 								'child_id' => $child_id,
-								'input_name_filter_type' => 'action_filter_type',
+								'input_name_filter_id' => 'action_filter_id',
 								'input_name_filter_key' => 'action_filter_key',
 								'input_name_filter_compare' => 'action_filter_compare',
 								'input_name_filter_value' => 'action_filter_value',
@@ -1018,7 +1019,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Filter</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-type='action_filter_type[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
 					$html .= "					Add While Condition";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
@@ -1035,10 +1036,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						foreach ( $block['filters'] as $child_id => $filter ) {
 
 							$args = array(
-								'filter_type' => $filter['filter_type'],
+								'filter_id' => $filter['filter_id'],
 								'action_block_id' => $action_block_id,
 								'child_id' => $child_id,
-								'input_name_filter_type' => 'action_filter_type',
+								'input_name_filter_id' => 'action_filter_id',
 								'input_name_filter_key' => 'action_filter_key',
 								'input_name_filter_compare' => 'action_filter_compare',
 								'input_name_filter_value' => 'action_filter_value',
@@ -1101,15 +1102,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 		/* AJAX - Build Filter HTML */
 		public static function ajax_build_filter( $args ) {
 
-			if ( !isset($_REQUEST['filter_type']) && !isset($args['filter_type']) )  {
+			if ( !isset($_REQUEST['filter_id']) && !isset($args['filter_id']) )  {
 				exit;
 			}
 
 			/* Get Parameters */
-			( isset( $args['filter_type'] ) ) ? $args['filter_type'] :  $args['filter_type'] = $_REQUEST['filter_type'];
+			( isset( $args['filter_id'] ) ) ? $args['filter_id'] :  $args['filter_id'] = $_REQUEST['filter_id'];
 			( isset( $args['action_block_id'] ) ) ?  $args['action_block_id'] :  $args['action_block_id'] = $_REQUEST['action_block_id'];
 			( isset( $args['child_id'] ) ) ?  $args['child_id'] :  $args['child_id'] = $_REQUEST['child_id'];
-			( isset( $args['input_name_filter_type'] ) ) ? $args['input_name_filter_type'] : $args['input_name_filter_type'] = $_REQUEST['filter_input_filter_type_name'];
+			( isset( $args['input_name_filter_id'] ) ) ? $args['input_name_filter_id'] : $args['input_name_filter_id'] = $_REQUEST['filter_input_filter_id_name'];
 			( isset( $args['input_name_filter_key'] ) ) ? $args['input_name_filter_key'] : $args['input_name_filter_key'] = $_REQUEST['filter_input_key_name'];
 			( isset( $args['input_name_filter_compare'] ) ) ? $args['input_name_filter_compare'] : $args['input_name_filter_compare'] = $_REQUEST['filter_input_compare_name'];
 			( isset( $args['input_name_filter_value'] ) ) ? $args['input_name_filter_value'] : $args['input_name_filter_value'] = $_REQUEST['filter_input_value_name'];
@@ -1118,7 +1119,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			/* Get Filter Definitions */
 			$Inbound_Automation =  Inbound_Automation_Load_Extensions();
 			$filters = $Inbound_Automation->filters;
-			$this_filter =  $args['filter_type'];
+			//print_r($filters);exit;
+			$this_filter =  $args['filter_id'];
 
 			/* Die If No Filter Selected */
 			if ( $this_filter == '-1'  &&  defined( 'DOING_AJAX' ) && DOING_AJAX  ) {
@@ -1165,7 +1167,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html .= "<table class='table-filter' data-child-id='".$args['child_id']."'>";
 			$html .= "	<tr class='tr-filter'>";
 			$html .= "		<td class='td-filter-key'>";
-			$html .= "			<input type='hidden' name='".$args['input_name_filter_type']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . "[".$args['child_id']."]' value='".$this_filter."'>";
+			$html .= "			<input type='hidden' name='".$args['input_name_filter_id']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . "[".$args['child_id']."]' value='".$this_filter."'>";
 			$html .= 			$key_input;
 			$html .= "		</td>";
 			$html .= "		<td class='td-filter-compare'>";
@@ -1302,12 +1304,12 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$filter_whitelist = array();
 
 
-			if ( !isset($triggers[$target_trigger]['filters']) ) {
+			if ( !isset($triggers[$target_trigger]['arguments']) ) {
 				echo json_encode( array( array( 'id' => '0' , 'label' => 'Error: No Filters for Selected Trigger' ) ) );
 				exit;
 			}
 
-			foreach ($triggers[$target_trigger]['filters'] as $filter) {
+			foreach ($triggers[$target_trigger]['arguments'] as $filter) {
 				$filter_whitelist[] = array(
 					'id' => $filter['id'],
 					'label' => $filter['label']
