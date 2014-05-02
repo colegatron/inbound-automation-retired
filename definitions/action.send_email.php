@@ -28,32 +28,38 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 				'label' => 'Send Email',
 				'description' => 'Send an email using available filter data.',
 				'settings' => array (
-								array (
-									'id' => 'to_address',
-									'label' => 'To:',
-									'type' => 'text',
-									'default' => '{{lead-email}}',
-									),
-								array (
-									'id' => 'from_address',
-									'label' => 'From:',
-									'type' => 'text',
-									'default' => '{{admin-email}}',
-									),
-								array (
-									'id' => 'email_template',
-									'label' => 'Select Template',
-									'type' => 'dropdown',
-									'options' => $email_templates
-									)
-								)
-
+					array (
+						'id' => 'to_address',
+						'label' => 'To Address:',
+						'type' => 'text',
+						'default' => '{{lead-email-address}}'
+						),
+					array (
+						'id' => 'from_address',
+						'label' => 'From Address:',
+						'type' => 'text',
+						'default' => '{{admin-email-address}}'
+						),
+					array (
+						'id' => 'from_name',
+						'label' => 'From Name:',
+						'type' => 'text',
+						'default' => '{{site-name}}'
+						),
+					array (
+						'id' => 'email_template',
+						'label' => 'Select Template',
+						'type' => 'dropdown',
+						'options' => $email_templates
+						)
+				)
 			);
 
 			return $actions;
 		}
 
 		public static function get_email_templates() {
+			
 		
 			$templates = get_posts(array(
 									'post_type' => 'email-template',
@@ -61,12 +67,11 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 								));
 										
 			
-			
 			foreach ( $templates as $template ) {
 				$email_templates[$template->ID] = $template->post_title;
 			}
 			
-			( $email_templates ) ? $email_templates : array();
+			$email_templates = ( isset($email_templates) ) ? $email_templates : array();
 			
 			return $email_templates;
 
@@ -77,9 +82,23 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 		*/
 		public static function run_action( $action , $arguments ) {
 			
-			$arguments = $action['job']['arguments']; 
+			$Inbound_Templating_Engine = Inbound_Templating_Engine();
+			
+			$template = get_post( $action['email_template'] );
+			$subject = get_post_meta( $template->ID , 'inbound_email_subject_template' , true );
+			$body = get_post_meta( $template->ID , 'inbound_email_body_template' , true );
+			
+			$to_address = $Inbound_Templating_Engine->replace_tokens( $action['to_address'] , $arguments );
+			$from_address = $Inbound_Templating_Engine->replace_tokens( $action['from_address'] , $arguments  );
+			$from_name = $Inbound_Templating_Engine->replace_tokens( $action['from_name'] , $arguments  );
+			$subject = $Inbound_Templating_Engine->replace_tokens( $subject , $arguments  );
+			$body = $Inbound_Templating_Engine->replace_tokens( $body , $arguments  );
+			
+			$headers = 'From: '. $from_name .' <'. $from_email .'>' . "\r\n";
+			$result = wp_mail( $to_address , $subject, $body , $headers );
+			
 			$action_encoded = json_encode($action) ;
-			inbound_record_log(  'Action Event - Send Email' , '<pre>'.$action_encoded.'</pre>' , $action['rule_id'] , 'action_event' );
+			inbound_record_log(  'Action Event - Send Email' , '<h2>To Address</h2>' . $to_address . '<h2>From Address</h2>' . $from_address .'<h2>From Name</h2>' . $from_name .'<h2>Subject</h2>' . $subject .'<h2>Body</h2><pre>' . $body .'</pre><h2>Settings</h2><pre>'. $action_encoded.'</pre> <h2>Arguments</h2><pre>' . json_encode($arguments , JSON_PRETTY_PRINT ) . '</pre>', $action['rule_id'] , 'action_event' );
 			
 		}
 

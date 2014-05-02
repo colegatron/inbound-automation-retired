@@ -28,10 +28,13 @@ class Inbound_Templating_Engine {
 	public static function define_default_tokens() {
 		self::$instance->defaults = array (
 			'admin-email-address' => get_option( 'admin_email' , '' ),
+			'admin-url' => admin_url(),
 			'site-name' => get_option( 'blogname' , '' ),
 			'site-tagline' => get_option( 'blogdescription' , '' ),
 			'site-url' => get_option( 'siteurl' , '' ) , 
-			'date-time' =>  date( 'Y-m-d H:i:s', current_time( 'timestamp', 1 ) )
+			'leads-urlpath' => WPL_URL , 
+			'landingpages-urlpath' => LANDINGPAGES_URLPATH , 
+			'date-time' =>  date( 'Y-m-d H:i:s A', current_time( 'timestamp', 1 ) )
 		);
 	}
 
@@ -60,9 +63,12 @@ class Inbound_Templating_Engine {
 					continue;
 				}
 				
-				/* prepare key */
+				/* prepare/re-map keys */
+				$key = str_replace( 'inbound_current_page_url' , 'source' , $key );
+				$key = str_replace( 'inbound_' , '' , $key );
 				$key = str_replace( 'wpleads_' , 'lead_' , $key );
 				$key = str_replace( '_' , '-' , $key );
+				
 				
 				/* replace tokens in template */
 				$template = str_replace( '{{'.$key.'}}' , $value , $template );
@@ -70,9 +76,12 @@ class Inbound_Templating_Engine {
 			}
 		
 		}
+		
+		/* Replace All Leftover Tokens */
+		$template = preg_replace( '/{{(.*?)}}/si' , '', $template , -1 );	
 
 
-		return $template;
+		return do_shortcode($template);
 	}
 	
 }

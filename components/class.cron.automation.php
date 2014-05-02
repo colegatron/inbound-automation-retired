@@ -41,12 +41,18 @@ class Inbound_Automation_Processing {
 	}
 	
 	/*
-	* Load Debug Tools 
+	* Debug Commands
 	*/
-	public static function load_debug_tools() {		
-		if ( isset($_GET['automation_debug']) ) {
+	public static function load_debug_tools() {
+
+		if ( isset($_GET['ma_delete_rules']) ) {
 			/* Empty Job Queue */
 			update_option('inbound_automation_queue' , '');
+		}	
+		if ( isset($_GET['ma_view_rules']) ) {
+			/* Empty Job Queue */
+			self::$instance->queue = json_decode( get_option('inbound_automation_queue' , '') , true);
+			print_r(self::$instance->queue);
 		}		
 	}
 	
@@ -62,7 +68,39 @@ class Inbound_Automation_Processing {
 		add_filter( 'cron_schedules', array( __CLASS__ , 'define_ping_interval' ) );
 		
 		add_action('init' , array( __CLASS__ , 'load_queue_hooks') );
+		
+		/* Add debug options to menu */
+		if ( is_admin() ) {
+			add_filter('inbound_menu_debug' , array( __CLASS__ , 'add_debug_items_to_menu' ) , 10 ,2);
+		}
 				
+	}
+	
+	/*
+	* Filters Debug Menu Items when Logged In
+	* @param ARRAY 
+	* @param STRING 
+	*/
+	public static function add_debug_items_to_menu( $menu_items , $parent_key ) {
+	
+		/* Remove Automation Jobs */
+		$menu_items['inbound-debug-clear-job-queue'] = array(
+		  'parent' => $parent_key,
+		  'title'  => __( 'Automation: Clear Job Queue', 'ma' ),
+		  'href'   =>  $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . '&ma_delete_rules=1',
+		  'meta'   => array( 'title' =>  __( 'Click here to empty rules queue', 'ma' ) )
+		);
+		
+		/* View Automation Job Data */
+		$menu_items['inbound-debug-view-job-queue'] = array(
+		  'parent' => $parent_key,
+		  'title'  => __( 'Automation: View Job Debug Data', 'ma' ),
+		  'href'   =>  $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . '&ma_view_rules=1',
+		  'meta'   => array( 'title' =>  __( 'Click here to empty rules queue', 'ma' ) )
+		);
+		
+		return $menu_items;
+		
 	}
 	
 	/* 
@@ -72,10 +110,10 @@ class Inbound_Automation_Processing {
 
 		self::$instance->queue = json_decode( get_option('inbound_automation_queue' , '') , true);
 
-		if ( !self::$instance->queue ) {
+		if ( !self::$instance->queue || !is_array(self::$instance->queue) ) {
 			return;
 		}
-		
+
 		foreach (self::$instance->queue as $job_id => $job) {
 			//print_r($job['rule']);exit;
 			add_action( 'inbound_automation' , function() use( $job_id , $job) {			
