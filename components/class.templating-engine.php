@@ -80,7 +80,6 @@ class Inbound_Templating_Engine {
 		/* Replace All Leftover Tokens */
 		$template = preg_replace( '/{{(.*?)}}/si' , '', $template , -1 );	
 
-
 		return do_shortcode($template);
 	}
 	
