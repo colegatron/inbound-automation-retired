@@ -214,7 +214,7 @@ if ( !class_exists( 'Inbound_WP_Core_Email_Templates' ) ) {
 				/* Comment Data */
 				array(
 					'wp_comment_id' => $comment->comment_ID,
-					'wp_comment_url' => get_permalink($comment->comment_post_ID).'#comments-'.$comment->ID,
+					'wp_comment_url' => get_permalink($comment->comment_post_ID).'#comments-'.$comment->comment_post_ID,
 					'wp_comment_author' => $comment->comment_author,
 					'wp_comment_author_email' =>  $comment->comment_author_email ,
 					'wp_comment_author_url' =>  $comment->comment_author_url ,

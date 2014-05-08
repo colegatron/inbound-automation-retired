@@ -16,11 +16,7 @@ include_once('components/class.post-type.automation.php');
 include_once('components/class.post-type.email-template.php');
 include_once('components/class.post-type.inbound-log.php');
 include_once('components/class.loader.automation.php');
-include_once('components/class.templating-engine.php');
-include_once('components/class.metaboxes.email-template.php');
 include_once('components/class.metaboxes.automation.php');
-include_once('components/class.shortcodes.email-template.php');
-include_once('components/class.wordpress-core.email.php');
 
 include_once('definitions/trigger.save_lead.php');
 include_once('definitions/action.wait.php');
