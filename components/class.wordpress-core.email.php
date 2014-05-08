@@ -260,7 +260,7 @@ if ( !class_exists( 'Inbound_WP_Core_Email_Templates' ) ) {
 
 	/* Overwrite Core Pluggable Functions With Our Own If Template Replacement is Enabled */
 	if (!function_exists('wp_new_user_notification')) {
-		if ($globals['inbound_replace_core_wp_email_templates']) {
+		if (isset($globals['inbound_replace_core_wp_email_templates'])) {
 			function wp_new_user_notification( $user_id , $plaintext_pass ) {
 				do_action( 'wp_new_user_notification' , $user_id , $plaintext_pass);
 			}
