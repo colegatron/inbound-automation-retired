@@ -31,10 +31,7 @@ if ( !class_exists( 'Inbound_Automation_Trigger_Update_Lead' ) ) {
 				array( 
 						'id' => 'lead_data',
 						'label' => 'Lead Lookup',
-						'class_name' => 'Inbound_Automation_Query_Lead',
-						'arguments' => array(
-							'lead_data' /* tells db lookup which trigger arguments to help with db calls */
-						),						
+						'class_name' => 'Inbound_Automation_Query_Lead'				
 					)
 			));
 			

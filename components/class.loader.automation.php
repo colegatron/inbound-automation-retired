@@ -159,8 +159,8 @@ class Inbound_Automation_Load_Extensions {
 				/* Build Trigger Filter Data */ 
 				$db_lookup_filters[$db_lookup_filter['id']] = array(
 					'class_name' => $db_lookup_filter['class_name'],
-					'id' => $db_lookup_filters['id'],
-					'label' => $db_lookup_filters['label'],
+					'id' => $db_lookup_filter['id'],
+					'label' => $db_lookup_filter['label'],
 					'key_input_type' => 'dropdown',
 					'keys' => $keys,
 					'compare' => $compare,
