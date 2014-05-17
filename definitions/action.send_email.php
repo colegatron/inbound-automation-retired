@@ -12,12 +12,13 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 
 		function __construct() {
 
-			add_filter( 'inbound_automation_actions' , array( __CLASS__ , 'define_filter' ) , 1 , 1);
+			add_filter( 'inbound_automation_actions' , array( __CLASS__ , 'define_action' ) , 1 , 1);
 		}
 
 		/* Build Action Definitions */
-		public static function define_filter( $actions ) {
+		public static function define_action( $actions ) {
 
+			
 			/* Get Available Email Templates */
 			$email_templates = self::get_email_templates();
 

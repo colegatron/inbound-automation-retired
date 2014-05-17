@@ -163,7 +163,6 @@ class Inbound_Automation_Processing {
 			/* Filter Action Block */
 			$evaluate = self::evaluate_action_block( $block );
 			
-			
 			/* If Evaluation Fails */
 			if ( !$evaluate ) {	
 				
@@ -320,18 +319,20 @@ class Inbound_Automation_Processing {
 			return true;
 		}
 			
-		/* Check Trigger Filters */
+		/* Check Action Filters */
 		if ( isset( $block['filters'] )  && $block['filters'] && $filters = $block['filters'] ) {
-
+			
+			$evaluate = true;
+			$evals = array();
+			
 			/* Check How Many Conditions as True */
 			foreach($filters as $filter) {
 			
 				$arguments = $block['job']['arguments'];
-				$key = self::get_argument_key_from_filter( $filter , $block );
+				$db_lookup_filter = self::$instance->definitions->db_lookup_filters[ $filter['filter_id'] ];
 				
-				$target_argument = $arguments[ $key ];
-				$evals[] = self::evaluate_filter( $filter , $target_argument );
-
+				$evals[] = self::evaluate_filter( $db_lookup_filter , $filter , $arguments );
+				
 			}			
 		
 			/* Return Final Evaluation Decision Based On Eval Nature */
@@ -346,7 +347,7 @@ class Inbound_Automation_Processing {
 			
 			/* Log Evaluation Attempt */
 			$block_encoded = self::json_indent( json_encode($block) );
-			inbound_record_log(  'Evaluating Action Block ' , '<pre>'.$block_encoded.'</pre>' , $block['job']['rule']['ID'] , 'evaluation_event' );
+			inbound_record_log(  'Evaluating Action Block ' , '<h2>Action Filter Evaluation</h2><p>Action Evaluation Result: '. $evaluate .'</p><p>Action Evaluation Nature: <br> ' . $block['action_block_filters_evaluate'] . '</p><p>Action Evaluation Debug Data: <br> <pre>' . self::json_indent( json_encode($evals) ) . '</pre></p><pre>'.$block_encoded.'</pre>' , $block['job']['rule']['ID'] , 'evaluation_event' );
 			
 			return $evaluate;			
 			
@@ -357,50 +358,57 @@ class Inbound_Automation_Processing {
 		
 	}
 	
-	/*
-	* Get Argument Key From Filter
-	*/
-	public static function get_argument_key_from_filter( $filter , $block ) {
-		
-		$filter_id = $block['job']['rule']['meta']['automation_trigger'][0];
-	
-		foreach ( self::$instance->definitions->triggers[$filter_id]['arguments'] as $key => $argument ) {
-	
-			if ( $filter['filter_id'] == $argument['id'] ) {
-				return $key;
-			}
-			
-		}	
-
-	}
 	
 	/*
 	* Evaluate Filter By Comparing Filter with Corresponding Incoming Data
+	* @param db_lookup_filter ARRAY contains db lookup data related to action filter being evaluated
+	* @param filter ARRAY contains data related to filter being evaluated
+	* @param arguments ARRAY contains arguments passed from trigger 
+	*
+	* @returns ARRAY of evaluation result data
 	*/
-	public static function evaluate_filter( $filter , $target_argument ) {
+	public static function evaluate_filter( $db_lookup_filter , $filter , $arguments ) {
+		
+		$eval = false;
+		$class_name = $db_lookup_filter['class_name'];
+		$function_name = 'query_' . $filter['action_filter_key'] ;
+
+		$db_lookup = $class_name::$function_name( $arguments );
+	
+		if ( $db_lookup===null ) {
 			
+			return array( 
+				'filter_key' => $filter['action_filter_key'] ,
+				'filter_compare' => $filter['action_filter_compare'],
+				'filter_value' => $filter['action_filter_value'],
+				'db_lookup_value' => 'EMPTY',
+				'eval' => false
+			);
+			
+		}
+		
 		switch ($filter['action_filter_compare']) {
 
 			case 'greater-than' :
 
-				if ( $filter['action_filter_value'] > $target_argument[ $filter['action_filter_key'] ] ) {
-					return true;
+				if ( $filter['action_filter_value'] < $db_lookup ) {
+					$eval = true;
 				}
 
 				BREAK;
 
 			case 'greater-than-equal-to' :
 
-				if ( $filter['action_filter_value'] >= $target_argument[ $filter['action_filter_key'] ] ) {
-					return true;
+				if ( $filter['action_filter_value'] <= $db_lookup ) {
+					$eval = true;
 				}
 
 				BREAK;
 
 			case 'less-than' :
 
-				if ( $filter['action_filter_value'] < $target_argument[ $filter['action_filter_key'] ] ) {
-					return true;
+				if ( $filter['action_filter_value'] > $db_lookup ) {
+					$eval = true;
 				}
 
 				BREAK;
@@ -408,43 +416,53 @@ class Inbound_Automation_Processing {
 
 			case 'less-than-equal-to' :
 
-				if ( $filter['action_filter_value'] <= $target_argument[ $filter['action_filter_key'] ] ) {
-					return true;
+				if ( $filter['action_filter_value'] >= $db_lookup ) {
+					$eval = true;
 				}
 
 				BREAK;
 
 			case 'contains' :
 
-				if ( stristr( $target_argument[ $filter['action_filter_key'] ] , $filter['action_filter_value'] ) ) {
-					return true;
+				if ( stristr( $db_lookup , $filter['action_filter_value'] ) ) {
+					$eval = true;
 				}
 
 				BREAK;
 
 			case 'equals' :
 			
-				if (  $filter['action_filter_value'] == $target_argument[ $filter['action_filter_key'] ] ) {
-					return true;
+				if (  $filter['action_filter_value'] == $db_lookup ) {
+					$eval = true;
 				}
 
 				BREAK;
 
 		}
 
-		return false;
+		return array( 
+			'filter_key' => $filter['action_filter_key'] ,
+			'filter_compare' => $filter['action_filter_compare'],
+			'filter_value' => $filter['action_filter_value'],
+			'db_lookup_value' => $db_lookup,
+			'eval' => $eval
+		);
 
 	}
 	
 	/*
 	* Evaluate All Filters Based on Evaluation Condition
+	* @param eval_nature STRING contains instructions on how to process filters
+	* @param evals ARRAY of indivual filter evaluation results
+	*
+	* @returns BOOL for overall evaluation result
 	*/
 	public static function evaluate_filters( $eval_nature , $evals ) {
 
 		switch ($eval_nature) {
 			case 'match-any' :
 				foreach ( $evals as $eval ) {
-					if ($eval) {
+					if ($eval['eval']) {
 						$evaluate = true;
 						break;
 					} else {
@@ -456,7 +474,7 @@ class Inbound_Automation_Processing {
 				
 			case 'match-all' :
 				foreach ( $evals as $eval ) {
-					if ($eval) {
+					if ($eval['eval']) {
 						$evaluate = true;
 					} else {
 						$evaluate = false;
@@ -467,7 +485,7 @@ class Inbound_Automation_Processing {
 				
 			case 'match-none' :
 				foreach ( $evals as $eval ) {
-					if ($eval) {
+					if ($eval['eval']) {
 						$evaluate = false;
 						break;
 					} else {
@@ -498,9 +516,12 @@ class Inbound_Automation_Processing {
 	*/
 	public static function add_job_to_queue( $rule , $arguments ) {
 		
-		/* Debug Mode - Log Event */
 				
 		Inbound_Automation_Processing::$instance->queue = json_decode( get_option('inbound_automation_queue' , '') , true);
+		
+		if ( !is_array(Inbound_Automation_Processing::$instance->queue) ) {
+			Inbound_Automation_Processing::$instance->queue = array();
+		}
 		
 		Inbound_Automation_Processing::$instance->queue[] = array( 'rule' => $rule , 'arguments' => $arguments );
 		

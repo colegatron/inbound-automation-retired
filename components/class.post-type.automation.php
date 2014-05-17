@@ -37,7 +37,7 @@ if ( !class_exists('Inbound_Automation_Post_Type') ) {
 				'new_item' => __( 'New Rules' , 'leads' ),
 				'view_item' => __( 'View Rules' , 'leads' ),
 				'search_items' => __( 'Search Rules' , 'leads' ),
-				'not_found' =>  __( 'Nothing found' , 'leads' ),
+				'not_found' =>	__( 'Nothing found' , 'leads' ),
 				'not_found_in_trash' => __( 'Nothing found in Trash' , 'leads' ),
 				'parent_item_colon' => ''
 			);
@@ -49,7 +49,8 @@ if ( !class_exists('Inbound_Automation_Post_Type') ) {
 				'show_ui' => true,
 				'query_var' => true,
 				'menu_icon' => INBOUND_MARKETING_AUTOMATION_URLPATH . 'images/automation.png',
-				'show_in_menu'  => true,
+				'show_in_menu'	=> true,
+				'show_in_nav_menus'	=> false,
 				'capability_type' => 'post',
 				'hierarchical' => false,
 				'menu_position' => null,
@@ -90,12 +91,12 @@ if ( !class_exists('Inbound_Automation_Post_Type') ) {
 					$automation_name = apply_filters('automation_name',$automation_name);
 
 					echo $automation_name;
-				  break;
+					break;
 
 				case "ma-automation-status":
 					$status = get_post_meta($post_id,'automation_active',true);
 					echo $status;
-				  break;
+					break;
 
 			}
 

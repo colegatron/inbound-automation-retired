@@ -13,7 +13,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 		static $post_type;
 		static $trigger;
 		static $trigger_evaluate;
-		static $trigger_filters;
+		static $argument_filters;
 		static $action_blocks;
 
 		public function __construct() {
@@ -38,17 +38,25 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			add_action( 'admin_enqueue_scripts', array( __CLASS__ , 'enqueue_admin_scripts' ) );
 			add_action( 'admin_print_footer_scripts', array( __CLASS__ , 'print_admin_scripts' ) );
 
-			/* Setup Ajax Listeners - Get Filters*/
-			add_action( 'wp_ajax_nopriv_automation_get_filters', array( __CLASS__ , 'ajax_load_filter_definitions' ) );
-			add_action( 'wp_ajax_automation_get_filters', array( __CLASS__ , 'ajax_load_filter_definitions' ) );
+			/* Setup Ajax Listeners - Get Trigger Argument Filters*/
+			add_action( 'wp_ajax_nopriv_automation_get_trigger_arguments', array( __CLASS__ , 'ajax_load_trigger_arguments' ) );
+			add_action( 'wp_ajax_automation_get_trigger_arguments', array( __CLASS__ , 'ajax_load_trigger_arguments' ) );
+			
+			/* Setup Ajax Listeners - Get Action DB Lookup Filters*/
+			add_action( 'wp_ajax_nopriv_automation_get_db_lookup_filters', array( __CLASS__ , 'ajax_load_db_lookup_filters' ) );
+			add_action( 'wp_ajax_automation_get_db_lookup_filters', array( __CLASS__ , 'ajax_load_db_lookup_filters' ) );
 
 			/* Setup Ajax Listeners - Get Actions */
 			add_action( 'wp_ajax_nopriv_automation_get_actions', array( __CLASS__ , 'ajax_load_action_definitions' ) );
 			add_action( 'wp_ajax_automation_get_actions', array( __CLASS__ , 'ajax_load_action_definitions' ) );
 
-			/* Setup Ajax Listeners - Build Filter Settings*/
-			add_action( 'wp_ajax_nopriv_automation_build_filter', array( __CLASS__ , 'ajax_build_filter' ) );
-			add_action( 'wp_ajax_automation_build_filter', array( __CLASS__ , 'ajax_build_filter' ) );
+			/* Setup Ajax Listeners - Build Trigger Filter Settings*/
+			add_action( 'wp_ajax_nopriv_automation_build_trigger_filter', array( __CLASS__ , 'ajax_build_trigger_filter' ) );
+			add_action( 'wp_ajax_automation_build_trigger_filter', array( __CLASS__ , 'ajax_build_trigger_filter' ) );
+			
+			/* Setup Ajax Listeners - Build DB Lookup Filter Settings*/
+			add_action( 'wp_ajax_nopriv_automation_build_db_lookup_filter', array( __CLASS__ , 'ajax_build_db_lookup_filter' ) );
+			add_action( 'wp_ajax_automation_build_db_lookup_filter', array( __CLASS__ , 'ajax_build_db_lookup_filter' ) );
 
 			/* Setup Ajax Listeners - Build Action Settings*/
 			add_action( 'wp_ajax_nopriv_automation_build_action', array( __CLASS__ , 'ajax_build_action' ) );
@@ -69,15 +77,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			}
 
 			/* Load Automation Definitions */
-			self::$Inbound_Automation =  Inbound_Automation_Load_Extensions();
+			self::$Inbound_Automation =	Inbound_Automation_Load_Extensions();
 			self::$triggers = self::$Inbound_Automation->triggers;
 			self::$filters = self::$Inbound_Automation->filters;
 			self::$actions = self::$Inbound_Automation->actions;
 
 			/* Load Automation Meta */
 			self::$trigger = get_post_meta( $post->ID , 'automation_trigger', true );
-			self::$trigger_evaluate = get_post_meta( $post->ID , 'automation_trigger_filters_evaluate', true );
-			self::$trigger_filters = json_decode( get_post_meta( $post->ID , 'automation_trigger_filters', true ) , true );
+			self::$trigger_evaluate = get_post_meta( $post->ID , 'automation_argument_filters_evaluate', true );
+			self::$argument_filters = json_decode( get_post_meta( $post->ID , 'automation_argument_filters', true ) , true );
 			self::$action_blocks = json_decode( get_post_meta( $post->ID , 'automation_action_blocks', true ) , true );
 
 			//print_r(self::$action_blocks);
@@ -110,31 +118,37 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			self::print_nav();
 			self::print_trigger_container();
 			self::print_actions_container();
+			self::print_logs_container();
 
 		}
 
 		public static function print_nav() {
 
 			$nav_elements = array(
-								array(
-									'id' => 'trigger-container',
-									'label' => 'Setup Trigger',
-									'class' => 'nav_trigger',
-									'default' => true
-									),
-								array(
-									'id' => 'actions-container',
-									'label' => 'Setup Actions',
-									'class' => 'nav_actions',
-									)
-								);
+				array(
+					'id' => 'trigger-container',
+					'label' => 'Setup Trigger',
+					'class' => 'nav_trigger',
+					'default' => true
+					),
+				array(
+					'id' => 'actions-container',
+					'label' => 'Setup Actions',
+					'class' => 'nav_actions',
+					),
+				array(
+					'id' => 'logs-container',
+					'label' => 'View Logs',
+					'class' => 'nav_logs',
+					)
+			);
 
 			$nav_elements = apply_filters( 'inbound_automation_nav_elements' , $nav_elements );
 
 			echo '<h2 class="nav-tab-wrapper" style="">';
 
 			foreach ($nav_elements as $nav) {
-				echo '<a class="nav-tab '.( isset($nav['default']) && $nav['default']  ? 'nav-tab-active' : '' ).' '.( isset($nav['class']) ? $nav['class'] : '' ) .'" id="'.$nav['id'].'"  style="margin-bottom:-4px;">'.$nav['label'].'</a>';
+				echo '<a class="nav-tab '.( isset($nav['default']) && $nav['default']	? 'nav-tab-active' : '' ).' '.( isset($nav['class']) ? $nav['class'] : '' ) .'" id="'.$nav['id'].'"	style="margin-bottom:-4px;">'.$nav['label'].'</a>';
 			}
 
 			echo '</h2>';
@@ -167,38 +181,38 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					</tr>
 					<tr class="tr-filter-select">
 						<td class='td-trigger-select' >
-							Add Trigger Conditions
+							Add Trigger Data Condition
 						</td>
-						<td class='td-filter-add-dropdown' id='trigger-filters-container'>
-							<select class='filter-select-dropdown' id='trigger-filter-select-dropdown' name='trigger-filters'  >
-								<option value="-1" class="">Select Filter</option>
+						<td class='td-filter-add-dropdown' id='argument-filters-container'>
+							<select class='trigger-filter-select-dropdown' id='trigger-arguments-filter-select-dropdown' name='argument-filters'	>
+								<option value="-1" class="">Select Condition</option>
 							</select>
-							<span class='button add-filter' id='' data-dropdown-id='trigger-filter-select-dropdown' data-filter-container='trigger-filters-container' data-filter-input-filter-id='trigger_filter_id' data-filter-input-key-name='trigger_filter_key' data-filter-input-compare-name='trigger_filter_compare' data-filter-input-value-name='trigger_filter_value'>
-								Add Trigger Condition
+							<span class='button add-trigger-filter' id='' data-dropdown-id='trigger-arguments-filter-select-dropdown' data-filter-container='argument-filters-container' data-filter-input-filter-id='trigger_argument_id' data-filter-input-key-name='trigger_filter_key' data-filter-input-compare-name='trigger_filter_compare' data-filter-input-value-name='trigger_filter_value'>
+								Add Condition
 							</span>
-							<div class='trigger-filter-evaluate <?php if ( !isset( self::$trigger_filters ) ||  count(self::$trigger_filters) < 1 ) { echo 'nav-hide'; } ?>'>
-									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-all' <?php if (  !self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'checked="checked"'; } ?>> Match All</span>
-									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-any' <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'checked="checked"'; } ?>> Match Any</span>
-									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-none' <?php if ( self::$trigger_evaluate == 'match-none' ) { echo 'checked="checked"'; } ?>> Match None</span>
+							<div class='trigger-filter-evaluate <?php if ( !isset( self::$argument_filters ) ||	count(self::$argument_filters) < 1 ) { echo 'nav-hide'; } ?>'>
+									<span class='label-evaluate'><input type='radio' name='argument_filters_evaluate' value='match-all' <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'checked="checked"'; } ?>> Match All</span>
+									<span class='label-evaluate'><input type='radio' name='argument_filters_evaluate' value='match-any' <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'checked="checked"'; } ?>> Match Any</span>
+									<span class='label-evaluate'><input type='radio' name='argument_filters_evaluate' value='match-none' <?php if ( self::$trigger_evaluate == 'match-none' ) { echo 'checked="checked"'; } ?>> Match None</span>
 							</div>
 							<?php
 							/* Load Trigger Filters if available */
-							if ( isset( self::$trigger_filters ) ) {
+							if ( isset( self::$argument_filters ) ) {
 
-								foreach (self::$trigger_filters as $child_id => $filter) {
+								foreach (self::$argument_filters as $child_id => $filter) {
 
 									$args = array(
 										'filter_id' => $filter['filter_id'],
 										'action_block_id' => 0,
 										'child_id' => $child_id,
-										'input_name_filter_id' => 'trigger_filter_id',
+										'input_name_filter_id' => 'trigger_argument_id',
 										'input_name_filter_key' => 'trigger_filter_key',
 										'input_name_filter_compare' => 'trigger_filter_compare',
 										'input_name_filter_value' => 'trigger_filter_value',
 										'defaults' => $filter
 									);
 
-									$html = self::ajax_build_filter( $args );
+									$html = self::ajax_build_trigger_filter( $args );
 									echo $html;
 
 								}
@@ -215,7 +229,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 		}
 
 		public static function print_actions_container() {
-
+			
 			?>
 			<div class='nav-container nav-hide actions-container' id='actions-container' >
 				<table class='table-trigger-container'>
@@ -243,6 +257,110 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				?>
 
+			</div>
+			<?php
+		}
+
+		public static function print_logs_container() {
+			global $inbound_automation_logs, $post;
+			//update_post_meta( $post->ID , '_automation_logs' ,  '' );
+			echo '<pre>';
+			//echo get_post_meta( $post->ID , '_automation_logs' , true );
+			echo '</pre>';
+			$logs = array_reverse( $inbound_automation_logs->get_logs( $post->ID ) , true );
+			
+			?>
+			<style>
+				.tr-log-entry-content {
+					display:none;
+				}
+				
+				#th-log-id, #th-log-expand {
+					width:50px;
+				}
+				
+				.tablesorter {
+					table-layout:fixed;
+					background:#fff;
+					max-width:100%;
+					border-spacing:0;
+					width:100%;
+					margin:10px 0;
+					border:1px solid #ddd;
+					border-collapse:separate;
+					*border-collapse:collapsed;
+					-webkit-box-shadow:0 0 4px rgba(0,0,0,0.10);
+					-moz-box-shadow:0 0 4px rgba(0,0,0,0.10);
+							box-shadow:0 0 4px rgba(0,0,0,0.10);
+				}
+				.tablesorter th, .tablesorter td {
+					padding:8px;
+					line-height:18px;
+					text-align:left;
+					border-top:1px solid #ddd;
+					word-wrap:break-word;
+				}
+				.tablesorter th {
+					background:#eee;
+					background:-webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#eee));
+					background:-moz-linear-gradient(top, #f6f6f6, #eee);
+					text-shadow:0 1px 0 #fff;
+					font-weight:bold;
+					vertical-align:bottom;
+				}
+				.tablesorter td {
+					vertical-align:top;
+				}
+				.tablesorter thead:first-child tr th,
+				.tablesorter thead:first-child tr td {
+					border-top:0;
+				}
+				
+				.tablesorter tbody + tbody {
+					border-top:2px solid #ddd;
+				}
+				.tablesorter th + th,
+				.tablesorter td + td,
+				.tablesorter th + td,
+				.tablesorter td + th {
+					border-left:1px solid #ddd;
+				}
+				.tablesorter thead:first-child tr:first-child th,
+				.tablesorter tbody:first-child tr:first-child th,
+				.tablesorter tbody:first-child tr:first-child td {
+					border-top:0;
+				}
+			</style>
+			<div class='nav-container nav-hide logs-container' id='logs-container' >
+				<table class='tablesorter'>
+					<tr> 
+						<th class=" sort-header" id='th-log-id'>Log ID</th> 
+						<th class=" sort-header" id='th-log-title'>Log Title</th> 
+						<th class=" sort-header" id='th-log-date'>Log Date</th> 						
+						<th class=" sort-header" id='th-log-date'>Log Type</th> 						
+						<th class=" sort-header" id='th-log-expand'>Expand</th> 						
+					</tr>
+					<?php 
+					
+					foreach ($logs as $key => $log) {
+						
+						echo '<tr class="tr-log-entry"	data-id="'.$key.'">';
+						echo '	<td class="td-log log-title">'.$key.'</td>';
+						echo '	<td class="td-log log-title">'.$log['log_title'].'</td>';
+						echo '	<td class="td-log log-datetime">'.$log['log_datetime'].'</td>';
+						echo '	<td class="td-log log-datetime">'.$log['log_type'].'</td>';
+						echo '	<td class="td-log log-datetime"><a href="#" class="toggle-log-content" data-id="'.$key.'">+/-</a></td>';
+						echo '</tr>';
+						echo '<tr class="tr-log-entry-content" id="log-content-'.$key.'" data-id="'.$key.'">';
+						echo '	<td colspan=4 class="td-log-entry-content"data-id="'.$key.'" >';
+						echo 		stripslashes(base64_decode($log['log_content']));
+						echo '	</td>';
+						echo '</td>';
+						echo '</tr>';
+					}
+					
+					?>
+				</table>
 			</div>
 			<?php
 		}
@@ -279,7 +397,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				foreach ( $_POST['trigger_filter_key'] as $id => $value ) {
 
-					( isset( $_POST['trigger_filter_id'][$id] ) ) ? $filters[$id]['filter_id'] = $_POST['trigger_filter_id'][$id] : $filters[$id]['filter_id'] = null;
+					( isset( $_POST['trigger_argument_id'][$id] ) ) ? $filters[$id]['filter_id'] = $_POST['trigger_argument_id'][$id] : $filters[$id]['filter_id'] = null;
 					( isset( $_POST['trigger_filter_key'][$id] ) ) ? $filters[$id]['trigger_filter_key'] = $_POST['trigger_filter_key'][$id] : $filters[$id]['key'] = null;
 					( isset( $_POST['trigger_filter_compare'][$id] ) ) ? $filters[$id]['trigger_filter_compare'] = $_POST['trigger_filter_compare'][$id] : $filters[$id]['trigger_filter_compare'] = null;
 					( isset( $_POST['trigger_filter_value'][$id] ) ) ? $filters[$id]['trigger_filter_value'] = $_POST['trigger_filter_value'][$id] : $filters[$id]['value'] = null;
@@ -288,15 +406,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				$filters = json_encode( $filters );
 
-				update_post_meta( $post_id, 'automation_trigger_filters', $filters );
+				update_post_meta( $post_id, 'automation_argument_filters', $filters );
 
 			} else {
-				update_post_meta( $post_id, 'automation_trigger_filters', '' );
+				update_post_meta( $post_id, 'automation_argument_filters', '' );
 			}
 
 			/* Save Trigger Filter Evaulation Nature */
-			if ( isset ( $_POST[ 'trigger_filters_evaluate' ] ) ) {
-				update_post_meta( $post_id, 'automation_trigger_filters_evaluate', $_POST[ 'trigger_filters_evaluate' ] );
+			if ( isset ( $_POST[ 'argument_filters_evaluate' ] ) ) {
+				update_post_meta( $post_id, 'automation_argument_filters_evaluate', $_POST[ 'argument_filters_evaluate' ] );
 			}
 
 			/* Save Action Blocks */
@@ -337,7 +455,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					if ( isset( $_POST['action_name'][$block_id]['then'] ) ) {
 
 						/* Get Action Definitions */
-						$Inbound_Automation =  Inbound_Automation_Load_Extensions();
+						$Inbound_Automation =	Inbound_Automation_Load_Extensions();
 						$actions_definitions = $Inbound_Automation->actions;
 
 						foreach ( $_POST['action_name'][$block_id]['then'] as $child_id => $action_name ) {
@@ -372,7 +490,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					if ( isset( $_POST['action_name'][$block_id]['else'] ) ) {
 
 						/* Get Action Definitions */
-						$Inbound_Automation =  Inbound_Automation_Load_Extensions();
+						$Inbound_Automation =	Inbound_Automation_Load_Extensions();
 						$actions_definitions = $Inbound_Automation->actions;
 
 						foreach (	$_POST['action_name'][$block_id]['else'] as $child_id => $action_name ) {
@@ -438,7 +556,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			if ($hook == 'post-new.php' || $hook == 'post.php') {
 				wp_enqueue_script( 'jquery-effects-core' );
 				wp_enqueue_script( 'jquery-effects-highlight' );
-				wp_enqueue_style( 'inbound_automation_admin_css' ,  INBOUND_MARKETING_AUTOMATION_URLPATH . 'css/automation/admin.post-edit.css' );
+				wp_enqueue_style( 'inbound_automation_admin_css' ,	INBOUND_MARKETING_AUTOMATION_URLPATH . 'css/automation/admin.post-edit.css' );
 			}
 		}
 
@@ -453,8 +571,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			?>
 			<script>
 
-			/* Get Filters by Trigger ID */
-			function populate_filters() {
+			/* Get Trigger Argument Filters by Trigger ID */
+			function populate_trigger_argument_filters() {
 
 				var trigger = jQuery('#trigger-dropdown').find(":selected").val();
 
@@ -464,23 +582,23 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				}
 
 				/* disable filter dropdown momentarily */
-				jQuery('.filter-select-dropdown').prop( 'disabled' , true );
+				jQuery('.trigger-filter-select-dropdown').prop( 'disabled' , true );
 
 				/* rumble time */
 				jQuery('.tr-filter-select').effect('highlight');
 
 				jQuery.ajax({
-					 type: "GET",
-					 url: ajaxurl,
-					 dataType: "json",
-					 async:true,
-					 data : {
-						'action' : 'automation_get_filters',
+					type: "GET",
+					url: ajaxurl,
+					dataType: "json",
+					async:true,
+					data : {
+						'action' : 'automation_get_trigger_arguments',
 						'trigger' : trigger
-					 },
-					 success: function(filters) {
+					},
+					success: function(filters) {
 						/* clear old options */
-						jQuery('.filter-select-dropdown option:gt(0)').remove();
+						jQuery('.trigger-filter-select-dropdown option:gt(0)').remove();
 
 						/* populate new options */
 						var html = '';
@@ -489,11 +607,68 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						for (var i = 0; i< len; i++) {
 							html += '<option value="' + filters[i].id + '">' + filters[i].label + '</option>';
 						}
-						jQuery('.filter-select-dropdown').append(html);
+						jQuery('.trigger-filter-select-dropdown').append(html);
 
 
 						/* enable select box */
-						jQuery('.filter-select-dropdown').prop( 'disabled' , false );
+						jQuery('.trigger-filter-select-dropdown').prop( 'disabled' , false );
+
+					}
+				});
+			}
+			
+			/* Get Action DB Lookup Filters by Trigger ID */
+			function populate_action_db_lookup_filters() {
+
+				var trigger = jQuery('#trigger-dropdown').find(":selected").val();
+
+				/* Hide Evaluation Options When 'Select Trigger' is Selected */
+				if (trigger == '-1') {
+					jQuery('.trigger-filter-evaluate').addClass('nav-hide');
+				}
+
+				/* disable filter dropdown momentarily */
+				jQuery('.action-filter-select-dropdown').prop( 'disabled' , true );
+
+				/* rumble time */
+				jQuery('.tr-filter-select').effect('highlight');
+
+				jQuery.ajax({
+					type: "GET",
+					url: ajaxurl,
+					dataType: "json",
+					async:true,
+					data : {
+						'action' : 'automation_get_db_lookup_filters',
+						'trigger' : trigger
+					},
+					success: function(filters) {
+					
+						jQuery('.add-action-block').show();
+						
+						/* Hide Conditional Action Block Options When No DB Lookups Present */
+						if ( filters[0].id == 0 ) {							
+							jQuery('#if-then').hide();
+							jQuery('#if-then-else').hide();
+							jQuery('#while').hide();
+						}
+						
+						/* clear old options */
+						jQuery('.action-filter-select-dropdown option:gt(0)').remove();
+
+						/* populate new options */
+						var html = '';
+						var len = filters.length;
+
+						for (var i = 0; i< len; i++) {
+							html += '<option value="' + filters[i].id + '">' + filters[i].label + '</option>';
+						}	
+
+						/* add html to selet box */
+						jQuery('.action-filter-select-dropdown').append(html);
+
+						/* enable select box */
+						jQuery('.action-filter-select-dropdown').prop( 'disabled' , false );
 
 					}
 				});
@@ -511,15 +686,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				//jQuery('.action-block-actions').effect('highlight');
 
 				jQuery.ajax({
-					 type: "GET",
-					 url: ajaxurl,
-					 dataType: "json",
-					 async:true,
-					 data : {
+					type: "GET",
+					url: ajaxurl,
+					dataType: "json",
+					async:true,
+					data : {
 						'action' : 'automation_get_actions',
 						'trigger' : trigger
-					 },
-					 success: function(actions) {
+					},
+					success: function(actions) {
 						/* clear old options */
 						jQuery('.action-select-dropdown option:gt(0)').remove();
 
@@ -559,10 +734,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				});
 
 				/* Set Initial Trigger Filters Select Values */
-				var trigger =  jQuery('#trigger-dropdown').find(":selected").val();
+				var trigger =	jQuery('#trigger-dropdown').find(":selected").val();
 				if ( trigger != '-1' ) {
-					populate_filters();
+					populate_trigger_argument_filters();
 					populate_actions();
+					populate_action_db_lookup_filters();
 				}
 
 				/* Update Trigger Condition */
@@ -572,14 +748,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					jQuery('.filter-container').remove();
 
 					/* repopulate trigger filter dropdown */
-					populate_filters();
+					populate_trigger_argument_filters();
 					populate_actions();
+					populate_action_db_lookup_filters();
 
 				});
 
-				/* Adds Filters to Condition Contaner*/
-				jQuery('body').on( 'click' , '.add-filter' , function() {
-
+				/* Adds Trigger Argument Filters to Trigger Conditions */
+				jQuery('body').on( 'click' , '.add-trigger-filter' , function() {
+					
 					var dropdown_id = jQuery(this).attr('data-dropdown-id');
 					var filter_id = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
 
@@ -601,12 +778,12 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 					/* AJAX - Get Filter HTML */
 					jQuery.ajax({
-						 type: "GET",
-						 url: ajaxurl,
-						 dataType: "html",
-						 async:true,
-						 data : {
-							'action' : 'automation_build_filter',
+						type: "GET",
+						url: ajaxurl,
+						dataType: "html",
+						async:true,
+						data : {
+							'action' : 'automation_build_trigger_filter',
 							'filter_id' : filter_id,
 							'action_block_id' : null,
 							'child_id' : child_id,
@@ -615,11 +792,56 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							'filter_input_compare_name' : filter_input_compare_name,
 							'filter_input_value_name' : filter_input_value_name,
 							'defaults' : null
-						 },
-						 success: function(html) {
+						},
+						success: function(html) {
 							/* Reveal Trigger Evaluation Options */
 							jQuery('.trigger-filter-evaluate').removeClass('nav-hide');
 
+							jQuery('#'+target_container).append(html);
+						}
+					});
+
+				});
+
+				/* Adds Action DB Lookup Filters to Action Conditions */
+				jQuery('body').on( 'click' , '.add-action-filter' , function() {
+					
+					var dropdown_id = jQuery(this).attr('data-dropdown-id');
+					var filter_id = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
+
+					var target_container = jQuery(this).attr('data-filter-container');
+					var filter_input_filter_id_name = jQuery(this).attr('data-filter-input-filter-id');
+					var filter_input_key_name = jQuery(this).attr('data-filter-input-key-name');
+					var filter_input_compare_name = jQuery(this).attr('data-filter-input-compare-name');
+					var filter_input_value_name = jQuery(this).attr('data-filter-input-value-name');
+
+					var child_id = jQuery( "body" ).find( '#' + target_container + ' .table-filter:last' ).attr( 'data-child-id' );
+
+					/* Create Original Filter Id */
+					if ( typeof child_id == 'undefined' ) {
+						child_id = 1;
+					} else {
+						child_id = parseInt(child_id) + 1;
+					}
+
+					/* AJAX - Get Filter HTML */
+					jQuery.ajax({
+						type: "GET",
+						url: ajaxurl,
+						dataType: "html",
+						async:true,
+						data : {
+							'action' : 'automation_build_db_lookup_filter',
+							'filter_id' : filter_id,
+							'action_block_id' : null,
+							'child_id' : child_id,
+							'filter_input_filter_id_name' : filter_input_filter_id_name,
+							'filter_input_key_name' : filter_input_key_name,
+							'filter_input_compare_name' : filter_input_compare_name,
+							'filter_input_value_name' : filter_input_value_name,
+							'defaults' : null
+						},
+						success: function(html) {
 							jQuery('#'+target_container).append(html);
 						}
 					});
@@ -650,11 +872,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 					/* AJAX - Get Filter HTML */
 					jQuery.ajax({
-						 type: "GET",
-						 url: ajaxurl,
-						 dataType: "html",
-						 async:true,
-						 data : {
+						type: "GET",
+						url: ajaxurl,
+						dataType: "html",
+						async:true,
+						data : {
 							'action' : 'automation_build_action',
 							'action_name' : action_name,
 							'action_type' : action_type,
@@ -662,8 +884,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							'child_id' : child_id,
 							'input_action_name_name' : input_action_name_name,
 							'defaults' : null
-						 },
-						 success: function(html) {
+						},
+						success: function(html) {
 							/* Reveal Trigger Evaluation Options */
 							jQuery('#'+target_container).append(html);
 						}
@@ -712,22 +934,29 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 					/* AJAX - Get Filter HTML */
 					jQuery.ajax({
-						 type: "GET",
-						 url: ajaxurl,
-						 dataType: "html",
-						 async:true,
-						 data : {
+						type: "GET",
+						url: ajaxurl,
+						dataType: "html",
+						async:true,
+						data : {
 							'action' : 'automation_build_action_block',
 							'action_block_type' : action_block_type,
 							'action_block_id' : action_block_id
-						 },
-						 success: function(html) {
+						},
+						success: function(html) {
 							jQuery('.actions-container').append(html);
-							populate_filters();
+							populate_trigger_argument_filters();
 							populate_actions();
+							populate_action_db_lookup_filters();
 						}
 					});
 
+				});
+				
+				/* Toggle Log Content */
+				jQuery('body').on( 'click' , '.toggle-log-content' , function() {
+					var log_id = jQuery(this).attr('data-id');
+					jQuery('#log-content-' + log_id ).toggle();
 				});
 			});
 
@@ -736,7 +965,14 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 		}
 
-
+		/* Builds Action Block HTML 
+		* @param action_block_type STRING 
+		* @param action_block_id STRING Which Action Block Placement Spot Is Next In Line
+		* @param action_priority STRING Which Action Queue placement spot is next in line within the action block
+		* @param block ARRAY data for generating historic action blocks
+		*
+		* @returns html STRING constructed html string 
+		*/
 		public static function ajax_build_action_block( $action_block_type = null , $action_block_id = null , $action_priority = null, $block = null ) {
 
 			if ( !isset($_REQUEST['action_block_type']) && !$action_block_type ) {
@@ -748,7 +984,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			( isset($_REQUEST['action_block_priority']) ) ? $action_block_id = $_REQUEST['action_block_priority'] : $action_block_id;
 
 			$html = '';
-			//print_r($args['default']);exit;
+
 			switch ($action_block_type) {
 				case 'actions' :
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
@@ -765,7 +1001,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Action</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'  data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "					Add Action";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
@@ -809,11 +1045,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "	</legend>";					
 					$html .= "		<fieldset id='action-block-if-then-conditions' class='action-block-conditions'>";
 					$html .= "			<legend>Conditions:</legend>";
-					$html .= "				<select class='filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
+					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Filter</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
-					$html .= "					Add Condition";
+					$html .= "				<span class='button add-action-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'	data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "					Add Lookup";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
 					$html .= "					<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-all' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] || !isset($block['action_block_filters_evaluate']) == 'match-all' ? 'checked="checked"' : '' ) ."> Match All</span>";
@@ -839,7 +1075,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 								'defaults' => $filter
 							);
 
-							$html .= self::ajax_build_filter( $args );
+							$html .= self::ajax_build_db_lookup_filter( $args );
 
 						}
 					}
@@ -851,7 +1087,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Action</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'  data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "					Add Action";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
@@ -896,11 +1132,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "	<legend class='handle'>IF/Then/Else Action Block</legend>";
 					$html .= "		<fieldset id='action-block-if-then-else-conditions' class='action-block-conditions'>";
 					$html .= "			<legend>Conditions:</legend>";
-					$html .= "				<select class='filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
+					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Filter</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
-					$html .= "					Add Condition";
+					$html .= "				<span class='button add-action-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'	data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "					Add Lookup";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
 					$html .= "					<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-all' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] || !isset($block['action_block_filters_evaluate']) == 'match-all' ? 'checked="checked"' : '' ) ."> Match All</span>";
@@ -926,7 +1162,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 								'defaults' => $filter
 							);
 
-							$html .= self::ajax_build_filter( $args );
+							$html .= self::ajax_build_db_lookup_filter( $args );
 
 						}
 					}
@@ -970,7 +1206,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='action-select-dropdown' id='else-action-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Action</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='else-action-select-dropdown-".$action_block_id."' data-action-container='action-block-else-actions-container-".$action_block_id."'  data-action-type='else'  data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='else-action-select-dropdown-".$action_block_id."' data-action-container='action-block-else-actions-container-".$action_block_id."'	data-action-type='else'	data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "					Add Action";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-else-actions-container' id='action-block-else-actions-container-".$action_block_id."' >";
@@ -1016,10 +1252,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "	</legend>";					
 					$html .= "		<fieldset id='action-block-while-conditions' class='action-block-conditions'>";
 					$html .= "			<legend>Conditions:</legend>";
-					$html .= "				<select class='filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
+					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Filter</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'  data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "				<span class='button add-action-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'	data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
 					$html .= "					Add While Condition";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
@@ -1046,7 +1282,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 								'defaults' => $filter
 							);
 
-							$html .= self::ajax_build_filter( $args );
+							$html .= self::ajax_build_db_lookup_filter( $args );
 
 						}
 					}
@@ -1058,7 +1294,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Action</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'  data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "					Add While Action";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
@@ -1099,17 +1335,17 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			}
 		}
 
-		/* AJAX - Build Filter HTML */
-		public static function ajax_build_filter( $args ) {
+		/* AJAX - Build Trigger Filter HTML */
+		public static function ajax_build_trigger_filter( $args ) {
 
-			if ( !isset($_REQUEST['filter_id']) && !isset($args['filter_id']) )  {
+			if ( !isset($_REQUEST['filter_id']) && !isset($args['filter_id']) )	{
 				exit;
 			}
 
 			/* Get Parameters */
-			( isset( $args['filter_id'] ) ) ? $args['filter_id'] :  $args['filter_id'] = $_REQUEST['filter_id'];
-			( isset( $args['action_block_id'] ) ) ?  $args['action_block_id'] :  $args['action_block_id'] = $_REQUEST['action_block_id'];
-			( isset( $args['child_id'] ) ) ?  $args['child_id'] :  $args['child_id'] = $_REQUEST['child_id'];
+			( isset( $args['filter_id'] ) ) ? $args['filter_id'] :	$args['filter_id'] = $_REQUEST['filter_id'];
+			( isset( $args['action_block_id'] ) ) ?	$args['action_block_id'] :	$args['action_block_id'] = $_REQUEST['action_block_id'];
+			( isset( $args['child_id'] ) ) ?	$args['child_id'] :	$args['child_id'] = $_REQUEST['child_id'];
 			( isset( $args['input_name_filter_id'] ) ) ? $args['input_name_filter_id'] : $args['input_name_filter_id'] = $_REQUEST['filter_input_filter_id_name'];
 			( isset( $args['input_name_filter_key'] ) ) ? $args['input_name_filter_key'] : $args['input_name_filter_key'] = $_REQUEST['filter_input_key_name'];
 			( isset( $args['input_name_filter_compare'] ) ) ? $args['input_name_filter_compare'] : $args['input_name_filter_compare'] = $_REQUEST['filter_input_compare_name'];
@@ -1117,13 +1353,103 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			( isset( $args['defaults'] ) ) ? $args['defaults'] : $args['defaults'] = $_REQUEST['defaults'];
 
 			/* Get Filter Definitions */
-			$Inbound_Automation =  Inbound_Automation_Load_Extensions();
-			$filters = $Inbound_Automation->filters;
-			//print_r($filters);exit;
-			$this_filter =  $args['filter_id'];
+			$Inbound_Automation =	Inbound_Automation_Load_Extensions();
+			$arguments = $Inbound_Automation->arguments;
+			$this_arg =	$args['filter_id'];
 
 			/* Die If No Filter Selected */
-			if ( $this_filter == '-1'  &&  defined( 'DOING_AJAX' ) && DOING_AJAX  ) {
+			if ( $this_arg == '-1'	&&	defined( 'DOING_AJAX' ) && DOING_AJAX	) {
+				die();
+			} else if ($this_arg == '-1' ) {
+				return '';
+			}
+
+			$key_args = array(
+							'name' => $args['input_name_filter_key'],
+							'type' => $arguments[$this_arg]['key_input_type'],
+							'options' => $arguments[$this_arg]['keys'],
+							'action_block_id' => $args['action_block_id'],
+							'child_id' => $args['child_id'],
+							'default' => $args['defaults'],
+							'class' => 'trigger-filter-key'
+							);
+
+			$compare_args = array(
+							'name' => $args['input_name_filter_compare'],
+							'type' => 'dropdown',
+							'options' => $arguments[$this_arg]['compare'],
+							'action_block_id' => $args['action_block_id'],
+							'child_id' => $args['child_id'],
+							'default' => $args['defaults'],
+							'class' => 'trigger-filter-compare'
+							);
+
+			$value_args = array(
+							'name' => $args['input_name_filter_value'] ,
+							'type' => $arguments[$this_arg]['value_input_type'],
+							'options' => $arguments[$this_arg]['values'],
+							'action_block_id' => $args['action_block_id'],
+							'child_id' => $args['child_id'],
+							'default' => $args['defaults'],
+							'class' => 'trigger-filter-value'
+							);
+
+			$key_input = self::build_input( $key_args );
+			$compare_input = self::build_input( $compare_args );
+			$value_input = self::build_input( $value_args );
+
+			$html = "<div class='filter-container'>";
+			$html .= "<table class='table-filter' data-child-id='".$args['child_id']."'>";
+			$html .= "	<tr class='tr-filter'>";
+			$html .= "		<td class='td-filter-key'>";
+			$html .= "			<input type='hidden' name='".$args['input_name_filter_id']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . "[".$args['child_id']."]' value='".$this_arg."'>";
+			$html .= 			$key_input;
+			$html .= "		</td>";
+			$html .= "		<td class='td-filter-compare'>";
+			$html .= 			$compare_input;
+			$html .= "		</td>";
+			$html .= "		<td class='td-filter-value'>";
+			$html .= 			$value_input;
+			$html .= "		</td>";
+			$html .= "		<td class='td-filter-delete'>";
+			$html .= "			<img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/delete.png' class='delete-filter'>";
+			$html .= "		</td>";
+			$html .= "	</tr>";
+			$html .= "</table>";
+			$html .= "</div>";
+
+			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+				echo $html;
+				die();
+			} else {
+				return $html;
+			}
+		}
+		
+		/* AJAX - Build DB Lookup Filter HTML */
+		public static function ajax_build_db_lookup_filter( $args ) {
+
+			if ( !isset($_REQUEST['filter_id']) && !isset($args['filter_id']) )	{
+				exit;
+			}
+
+			/* Get Parameters */
+			( isset( $args['filter_id'] ) ) ? $args['filter_id'] :	$args['filter_id'] = $_REQUEST['filter_id'];
+			( isset( $args['action_block_id'] ) ) ?	$args['action_block_id'] :	$args['action_block_id'] = $_REQUEST['action_block_id'];
+			( isset( $args['child_id'] ) ) ?	$args['child_id'] :	$args['child_id'] = $_REQUEST['child_id'];
+			( isset( $args['input_name_filter_id'] ) ) ? $args['input_name_filter_id'] : $args['input_name_filter_id'] = $_REQUEST['filter_input_filter_id_name'];
+			( isset( $args['input_name_filter_key'] ) ) ? $args['input_name_filter_key'] : $args['input_name_filter_key'] = $_REQUEST['filter_input_key_name'];
+			( isset( $args['input_name_filter_compare'] ) ) ? $args['input_name_filter_compare'] : $args['input_name_filter_compare'] = $_REQUEST['filter_input_compare_name'];
+			( isset( $args['input_name_filter_value'] ) ) ? $args['input_name_filter_value'] : $args['input_name_filter_value'] = $_REQUEST['filter_input_value_name'];
+			( isset( $args['defaults'] ) ) ? $args['defaults'] : $args['defaults'] = $_REQUEST['defaults'];
+
+			/* Get Filter Definitions */
+			$Inbound_Automation =	Inbound_Automation_Load_Extensions();
+			$db_lookup_filters = $Inbound_Automation->db_lookup_filters;
+			$this_filter =	$args['filter_id'];
+
+			/* Die If No Filter Selected */
+			if ( $this_filter == '-1'	&&	defined( 'DOING_AJAX' ) && DOING_AJAX	) {
 				die();
 			} else if ($this_filter == '-1' ) {
 				return '';
@@ -1131,32 +1457,32 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 			$key_args = array(
 							'name' => $args['input_name_filter_key'],
-							'type' => $filters[$this_filter]['key_type'],
-							'options' => $filters[$this_filter]['keys'],
+							'type' => $db_lookup_filters[$this_filter]['key_input_type'],
+							'options' => $db_lookup_filters[$this_filter]['keys'],
 							'action_block_id' => $args['action_block_id'],
 							'child_id' => $args['child_id'],
 							'default' => $args['defaults'],
-							'class' => 'filter-key'
+							'class' => 'action-filter-key'
 							);
 
 			$compare_args = array(
 							'name' => $args['input_name_filter_compare'],
 							'type' => 'dropdown',
-							'options' => $filters[$this_filter]['compare'],
+							'options' => $db_lookup_filters[$this_filter]['compare'],
 							'action_block_id' => $args['action_block_id'],
 							'child_id' => $args['child_id'],
 							'default' => $args['defaults'],
-							'class' => 'filter-compare'
+							'class' => 'action-filter-compare'
 							);
 
 			$value_args = array(
 							'name' => $args['input_name_filter_value'] ,
-							'type' => $filters[$this_filter]['value_type'],
-							'options' => $filters[$this_filter]['values'],
+							'type' => $db_lookup_filters[$this_filter]['value_input_type'],
+							'options' => $db_lookup_filters[$this_filter]['values'],
 							'action_block_id' => $args['action_block_id'],
 							'child_id' => $args['child_id'],
 							'default' => $args['defaults'],
-							'class' => 'filter-value'
+							'class' => 'action-filter-value'
 							);
 
 			$key_input = self::build_input( $key_args );
@@ -1190,29 +1516,30 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				return $html;
 			}
 		}
+		
 
 		/* AJAX - Build Action HTML */
 		public static function ajax_build_action( $args ) {
 
-			if ( !isset($_REQUEST['action_name']) && !isset($args['action_name']) )  {
+			if ( !isset($_REQUEST['action_name']) && !isset($args['action_name']) )	{
 				exit;
 			}
 
 			/* Get Parameters */
-			( isset( $args['action_name'] ) ) ? $args['action_name'] :  $args['action_name'] = $_REQUEST['action_name'];
-			( isset( $args['action_type'] ) ) ? $args['action_type'] :  $args['action_type'] = $_REQUEST['action_type'];
-			( isset( $args['action_block_id'] ) ) ?  $args['action_block_id'] :  $args['action_block_id'] = $_REQUEST['action_block_id'];
-			( isset( $args['child_id'] ) ) ?  $args['child_id'] :  $args['child_id'] = $_REQUEST['child_id'];
-			( isset( $args['input_action_name_name'] ) ) ?  $args['input_action_name_name'] :  $args['input_action_name_name'] = $_REQUEST['input_action_name_name'];
+			( isset( $args['action_name'] ) ) ? $args['action_name'] :	$args['action_name'] = $_REQUEST['action_name'];
+			( isset( $args['action_type'] ) ) ? $args['action_type'] :	$args['action_type'] = $_REQUEST['action_type'];
+			( isset( $args['action_block_id'] ) ) ?	$args['action_block_id'] :	$args['action_block_id'] = $_REQUEST['action_block_id'];
+			( isset( $args['child_id'] ) ) ?	$args['child_id'] :	$args['child_id'] = $_REQUEST['child_id'];
+			( isset( $args['input_action_name_name'] ) ) ?	$args['input_action_name_name'] :	$args['input_action_name_name'] = $_REQUEST['input_action_name_name'];
 			( isset( $args['defaults'] ) ) ? $args['defaults'] : $args['defaults'] = $_REQUEST['defaults'];
 
 			/* Get Action Definitions */
-			$Inbound_Automation =  Inbound_Automation_Load_Extensions();
+			$Inbound_Automation =	Inbound_Automation_Load_Extensions();
 			$actions = $Inbound_Automation->actions;
-			$this_action =  $args['action_name'];
+			$this_action =	$args['action_name'];
 
-			/* Die If No Filter Selected */
-			if ( $this_action == '-1'  &&  defined( 'DOING_AJAX' ) && DOING_AJAX  ) {
+			/* Die If No Action Selected */
+			if ( $this_action == '-1'	&&	defined( 'DOING_AJAX' ) && DOING_AJAX	) {
 				die();
 			} else if ($this_action == '-1' ) {
 				return '';
@@ -1285,10 +1612,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			}
 		}
 
-
-
-		/* AJAX - Get Filters by Selected Trigger */
-		public static function ajax_load_filter_definitions() {
+		/* AJAX - Get Trigger Arguments by Trigger ID */
+		public static function ajax_load_trigger_arguments() {
 
 			if ( !isset($_REQUEST['trigger']) ) {
 				exit;
@@ -1297,12 +1622,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$target_trigger = $_REQUEST['trigger'];
 
 
-			$Inbound_Automation =  Inbound_Automation_Load_Extensions();
+			$Inbound_Automation =	Inbound_Automation_Load_Extensions();
 			$triggers = $Inbound_Automation->triggers;
-			$filters = $Inbound_Automation->filters;
 
 			$filter_whitelist = array();
-
 
 			if ( !isset($triggers[$target_trigger]['arguments']) ) {
 				echo json_encode( array( array( 'id' => '0' , 'label' => 'Error: No Filters for Selected Trigger' ) ) );
@@ -1310,6 +1633,38 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			}
 
 			foreach ($triggers[$target_trigger]['arguments'] as $filter) {
+				$filter_whitelist[] = array(
+					'id' => $filter['id'],
+					'label' => $filter['label']
+				);	
+			}
+
+			echo json_encode( $filter_whitelist );
+			die();
+		}
+
+		/* AJAX - Get DB Lookup Filters by Selected Trigger */
+		public static function ajax_load_db_lookup_filters() {
+
+			if ( !isset($_REQUEST['trigger']) ) {
+				exit;
+			}
+
+			$target_trigger = $_REQUEST['trigger'];
+
+
+			$Inbound_Automation =	Inbound_Automation_Load_Extensions();
+			$triggers = $Inbound_Automation->triggers;
+
+			$filter_whitelist = array();
+
+
+			if ( !isset($triggers[$target_trigger]['db_lookup_filters']) ) {
+				echo json_encode( array( array( 'id' => '0' , 'label' => 'Error: No Filters for Selected Trigger' ) ) );
+				exit;
+			}
+
+			foreach ($triggers[$target_trigger]['db_lookup_filters'] as $filter) {
 				$filter_whitelist[] = array(
 					'id' => $filter['id'],
 					'label' => $filter['label']
@@ -1353,7 +1708,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$target_trigger = $_REQUEST['trigger'];
 
 
-			$Inbound_Automation =  Inbound_Automation_Load_Extensions();
+			$Inbound_Automation =	Inbound_Automation_Load_Extensions();
 			$triggers = $Inbound_Automation->triggers;
 			$actions = $Inbound_Automation->actions;
 			$action_whitelist = array();
