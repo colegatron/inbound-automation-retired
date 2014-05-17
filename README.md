@@ -13,7 +13,7 @@ Code review and development docs are on their way.
 
 ##License & Legal##
 
-David and I still are not sure how we are going to treat this tool. We may release it on the wp repository. We make keep it internal for premium members. The likelyhood that the ladder will be the case is high. 
+David and I still are not sure how we are going to implement this tool in our Inbound Now business model. We may release it on the wp repository. We make keep it internal for premium members. The likelyhood that the ladder will be the case is high. 
 
 We are interested in your opinion. 
 
