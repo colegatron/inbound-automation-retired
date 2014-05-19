@@ -7,8 +7,6 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 		static $Inbound_Automation;
 
 		static $triggers;
-		static $filters;
-		static $actions;
 
 		static $post_type;
 		static $trigger;
@@ -79,8 +77,6 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			/* Load Automation Definitions */
 			self::$Inbound_Automation =	Inbound_Automation_Load_Extensions();
 			self::$triggers = self::$Inbound_Automation->triggers;
-			self::$filters = self::$Inbound_Automation->filters;
-			self::$actions = self::$Inbound_Automation->actions;
 
 			/* Load Automation Meta */
 			self::$trigger = get_post_meta( $post->ID , 'automation_trigger', true );
