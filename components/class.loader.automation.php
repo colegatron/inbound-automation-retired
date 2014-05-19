@@ -200,6 +200,10 @@ class Inbound_Automation_Load_Extensions {
 			$rule_meta = get_post_meta( $rule->ID );
 			$rule->meta = $rule_meta;
 
+			if ( isset( $rule_meta['automation_trigger'][0] ) ) {
+				continue;
+			}
+			
 			if ( $rule_meta['automation_trigger'][0] == $trigger ) {
 
 				$evaluate = true;
