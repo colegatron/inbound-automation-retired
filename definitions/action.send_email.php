@@ -1,9 +1,9 @@
 <?php
 /*
-Action Name: Lead Data
-Action Description: Data array passed trough inbound_now_store_lead_post hook. Matches data map.
+Action Name: Send Email
+Action Description: Send an email.
 Action Author: Inbound Now
-Contributors: Hudson Atwell, David Wells
+Contributors: Hudson Atwell
 */
 
 if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {

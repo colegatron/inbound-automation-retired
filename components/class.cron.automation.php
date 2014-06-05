@@ -119,25 +119,25 @@ class Inbound_Automation_Processing {
 			add_action( 'inbound_automation' , function() use( $job_id , $job) {			
 				
 				$rule_id = $job['rule']['ID'];
-				$job = self::run_job( $job );
+				$job = Inbound_Automation_Processing::run_job( $job );
 				
 				/* Tell Log The Job Has Completed */
-				$remaining_actions = self::json_indent( $job['rule']['meta']['automation_action_blocks'][0] );
-				inbound_record_log(  'End Job' , '<h2>Actions Left</h2> <pre>' . $remaining_actions .'</pre><h2>Raw Job Data</h2><pre>' . self::json_indent( json_encode($job) ) . '</pre>', $rule_id , 'processing_event' );
+				$remaining_actions = Inbound_Automation_Processing::json_indent( $job['rule']['meta']['automation_action_blocks'][0] );
+				inbound_record_log(  'End Job' , '<h2>Actions Left</h2> <pre>' . $remaining_actions .'</pre><h2>Raw Job Data</h2><pre>' . Inbound_Automation_Processing::json_indent( json_encode($job) ) . '</pre>', $rule_id , 'processing_event' );
 				
 				/* Remove Job from Rule Queue if Empty */
 				if (!$job) {				
-					unset( self::$instance->queue[ $job_id ] );
+					unset( Inbound_Automation_Processing::$instance->queue[ $job_id ] );
 					inbound_record_log(  'Job Completed' , 'This job has successfully completed all it\'s tasks.' , $rule_id , 'processing_event' );
 				} 
 				
 				/* Update Job Object If Not */
 				else {
-					self::$instance->queue[ $job_id ] = $job;
+					Inbound_Automation_Processing::$instance->queue[ $job_id ] = $job;
 				}
 				
 				/* Update Rule Queue After Completed Job */
-				self::$instance->queue = update_option('inbound_automation_queue' , json_encode( self::$instance->queue ) );
+				Inbound_Automation_Processing::$instance->queue = update_option('inbound_automation_queue' , json_encode( Inbound_Automation_Processing::$instance->queue ) );
 			
 			} );
 		}

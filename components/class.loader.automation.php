@@ -46,7 +46,7 @@ class Inbound_Automation_Load_Extensions {
 
 		$rules = get_posts( array (
 				'post_type'=> 'automation',
-				'post_status' => 'published',
+				'post_status' => 'publish',
 				'posts_per_page' => -1
 			)
 		);
@@ -77,14 +77,14 @@ class Inbound_Automation_Load_Extensions {
 		/* Extend Compare Options */
 		$compare = apply_filters('inbound_automation_compare_args' , $compare_args );
 
-		/* Loop Through Trigger Arguments & Build Filter Setting Array */
+		/* Loop Through Trigger Arguments & Build Trigger Filter Setting Array */
 		foreach ( self::$instance->triggers as $hook =>$trigger) {
 
 			foreach ($trigger['arguments'] as $key => $argument ) {
 				
 				/* Load Historic Arugment Keys Associated With Trigger Hook */
 				$keys = get_option( $hook . '_' . $argument['id']);
-
+				//echo  $hook . '_' . $argument['id'];exit;
 				if ( !$keys ) {
 					$keys = array( '-1' => 'No Options Detected' );
 				}
@@ -103,7 +103,7 @@ class Inbound_Automation_Load_Extensions {
 		}
 
 		self::$instance->arguments = apply_filters( 'inbound_automation_arguments' , $arguments );
-
+		
 	}
 	
 	
@@ -198,9 +198,12 @@ class Inbound_Automation_Load_Extensions {
 		foreach (self::$instance->rules  as $rule) {
 
 			$rule_meta = get_post_meta( $rule->ID );
-			$rule->meta = $rule_meta;
-
-			if ( isset( $rule_meta['automation_trigger'][0] ) ) {
+			unset($rule_meta['_automation_logs']);
+			
+			$rule->meta = $rule_meta;	
+			$rule_meta_json = json_encode($rule_meta);
+			
+			if ( !isset( $rule_meta['automation_trigger'][0] ) ) {
 				continue;
 			}
 			
@@ -211,9 +214,9 @@ class Inbound_Automation_Load_Extensions {
 				$arguments =  func_get_args();
 
 				/* Check Trigger Filters */
-				if ( isset( $rule_meta['automation_argument_filters'][0] )  && $rule_meta['automation_argument_filters'][0] && $argument_filters = json_decode( $rule_meta['automation_argument_filters'][0] , true ) ) {
+				if ( isset( $rule_meta['automation_trigger_filters'][0] )  && $rule_meta['automation_trigger_filters'][0] && $trigger_filters = json_decode( $rule_meta['automation_trigger_filters'][0] , true ) ) {
 					
-					foreach($argument_filters as $filter) {
+					foreach($trigger_filters as $filter) {
 						$key = self::get_argument_key_from_trigger( $filter , $trigger );
 						$target_argument = $arguments[ $key ];
 						$evals[] = self::evaluate_trigger_filter( $filter , $target_argument );
@@ -223,7 +226,6 @@ class Inbound_Automation_Load_Extensions {
 					$evaluate = self::evaluate_arguments( $rule_meta['automation_trigger_filters_evaluate'][0] , $evals );
 				}
 
-				
 				/* Log Event */
 				self::record_trigger_event( $rule , $arguments , $trigger , $evaluate , $evals , $rule_meta['automation_trigger_filters_evaluate'][0] );
 				
@@ -363,6 +365,7 @@ class Inbound_Automation_Load_Extensions {
 			'filter_key' => $filter['trigger_filter_key'] ,
 			'filter_compare' => $filter['trigger_filter_compare'],
 			'filter_value' => $filter['trigger_filter_value'],
+			'compare_value' => $target_argument[ $filter['trigger_filter_key'] ] ,
 			'eval' => $eval
 		);
 
@@ -437,7 +440,8 @@ class Inbound_Automation_Load_Extensions {
 	/* Builds Filter Keys from Paramater Data Associated with Hook and Stores them in wp_options Table */
 	public static function update_filter( $action_hook , $filter_name , $filter ) {
 		$option_name = $action_hook . '_' . $filter_name ;
-
+		echo hello;
+		echo $option_name;	
 		if (  $filter_keys = get_option( 'inbound_store_lead_post_lead_data' )  ) {
 			$filter = array_merge( $filter_keys , $filter );
 			ksort($filter);
@@ -511,3 +515,4 @@ class Inbound_Automation_Load_Extensions {
 	}
 }
 }
+

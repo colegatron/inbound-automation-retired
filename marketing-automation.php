@@ -13,7 +13,6 @@ define( 'INBOUND_MARKETING_AUTOMATION_PATH' , WP_PLUGIN_DIR.'/'.plugin_basename(
 
 
 include_once('components/class.post-type.automation.php');
-include_once('components/class.post-type.email-template.php');
 include_once('components/class.logs.automation.php');
 include_once('components/class.loader.automation.php');
 include_once('components/class.metaboxes.automation.php');
@@ -22,6 +21,7 @@ include_once('definitions/trigger.save_lead.php');
 include_once('definitions/trigger.update_lead.php');
 include_once('definitions/action.wait.php');
 include_once('definitions/action.send_email.php');
+include_once('definitions/action.relay_data.php');
 include_once('definitions/query.lead_data.php');
 
 

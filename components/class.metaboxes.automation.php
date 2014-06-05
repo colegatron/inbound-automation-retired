@@ -11,7 +11,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 		static $post_type;
 		static $trigger;
 		static $trigger_evaluate;
-		static $argument_filters;
+		static $trigger_filters;
 		static $action_blocks;
 
 		public function __construct() {
@@ -80,8 +80,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 			/* Load Automation Meta */
 			self::$trigger = get_post_meta( $post->ID , 'automation_trigger', true );
-			self::$trigger_evaluate = get_post_meta( $post->ID , 'automation_argument_filters_evaluate', true );
-			self::$argument_filters = json_decode( get_post_meta( $post->ID , 'automation_argument_filters', true ) , true );
+			self::$trigger_evaluate = get_post_meta( $post->ID , 'automation_trigger_filters_evaluate', true );
+			self::$trigger_filters = json_decode( get_post_meta( $post->ID , 'automation_trigger_filters', true ) , true );
 			self::$action_blocks = json_decode( get_post_meta( $post->ID , 'automation_action_blocks', true ) , true );
 
 			//print_r(self::$action_blocks);
@@ -186,16 +186,16 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							<span class='button add-trigger-filter' id='' data-dropdown-id='trigger-arguments-filter-select-dropdown' data-filter-container='argument-filters-container' data-filter-input-filter-id='trigger_argument_id' data-filter-input-key-name='trigger_filter_key' data-filter-input-compare-name='trigger_filter_compare' data-filter-input-value-name='trigger_filter_value'>
 								Add Condition
 							</span>
-							<div class='trigger-filter-evaluate <?php if ( !isset( self::$argument_filters ) ||	count(self::$argument_filters) < 1 ) { echo 'nav-hide'; } ?>'>
-									<span class='label-evaluate'><input type='radio' name='argument_filters_evaluate' value='match-all' <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'checked="checked"'; } ?>> Match All</span>
-									<span class='label-evaluate'><input type='radio' name='argument_filters_evaluate' value='match-any' <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'checked="checked"'; } ?>> Match Any</span>
-									<span class='label-evaluate'><input type='radio' name='argument_filters_evaluate' value='match-none' <?php if ( self::$trigger_evaluate == 'match-none' ) { echo 'checked="checked"'; } ?>> Match None</span>
+							<div class='trigger-filter-evaluate <?php if ( !isset( self::$trigger_filters ) ||	count(self::$trigger_filters) < 1 ) { echo 'nav-hide'; } ?>'>
+									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-all' <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'checked="checked"'; } ?>> Match All</span>
+									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-any' <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'checked="checked"'; } ?>> Match Any</span>
+									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-none' <?php if ( self::$trigger_evaluate == 'match-none' ) { echo 'checked="checked"'; } ?>> Match None</span>
 							</div>
 							<?php
 							/* Load Trigger Filters if available */
-							if ( isset( self::$argument_filters ) ) {
+							if ( isset( self::$trigger_filters ) ) {
 
-								foreach (self::$argument_filters as $child_id => $filter) {
+								foreach (self::$trigger_filters as $child_id => $filter) {
 
 									$args = array(
 										'filter_id' => $filter['filter_id'],
@@ -402,15 +402,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				$filters = json_encode( $filters );
 
-				update_post_meta( $post_id, 'automation_argument_filters', $filters );
+				update_post_meta( $post_id, 'automation_trigger_filters', $filters );
 
 			} else {
-				update_post_meta( $post_id, 'automation_argument_filters', '' );
+				update_post_meta( $post_id, 'automation_trigger_filters', '' );
 			}
 
 			/* Save Trigger Filter Evaulation Nature */
-			if ( isset ( $_POST[ 'argument_filters_evaluate' ] ) ) {
-				update_post_meta( $post_id, 'automation_argument_filters_evaluate', $_POST[ 'argument_filters_evaluate' ] );
+			if ( isset ( $_POST[ 'trigger_filters_evaluate' ] ) ) {
+				update_post_meta( $post_id, 'automation_trigger_filters_evaluate', $_POST[ 'trigger_filters_evaluate' ] );
 			}
 
 			/* Save Action Blocks */
@@ -568,7 +568,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			<script>
 
 			/* Get Trigger Argument Filters by Trigger ID */
-			function populate_trigger_argument_filters() {
+			function populate_trigger_trigger_filters() {
 
 				var trigger = jQuery('#trigger-dropdown').find(":selected").val();
 
@@ -732,7 +732,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				/* Set Initial Trigger Filters Select Values */
 				var trigger =	jQuery('#trigger-dropdown').find(":selected").val();
 				if ( trigger != '-1' ) {
-					populate_trigger_argument_filters();
+					populate_trigger_trigger_filters();
 					populate_actions();
 					populate_action_db_lookup_filters();
 				}
@@ -744,7 +744,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					jQuery('.filter-container').remove();
 
 					/* repopulate trigger filter dropdown */
-					populate_trigger_argument_filters();
+					populate_trigger_trigger_filters();
 					populate_actions();
 					populate_action_db_lookup_filters();
 
@@ -941,7 +941,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						},
 						success: function(html) {
 							jQuery('.actions-container').append(html);
-							populate_trigger_argument_filters();
+							populate_trigger_trigger_filters();
 							populate_actions();
 							populate_action_db_lookup_filters();
 						}
