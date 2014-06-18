@@ -2,7 +2,7 @@
 
 if ( !class_exists( 'Inbound_Automation_Load_Extensions' ) ) {
 
-add_action( 'plugins_loaded' , 'Inbound_Automation_Load_Extensions' , 1 );
+/* Loaded initially in class.cron.automation */
 function Inbound_Automation_Load_Extensions() {
 	return Inbound_Automation_Load_Extensions::instance();
 }
@@ -10,7 +10,6 @@ function Inbound_Automation_Load_Extensions() {
 class Inbound_Automation_Load_Extensions {
 
 	public static $instance;
-	public static $Processor;
 	public $triggers;
 	public $rules;
 	public $arguments;
@@ -18,12 +17,10 @@ class Inbound_Automation_Load_Extensions {
 	public $actions;
 
 	public static function instance() {
+
 		if ( ! isset( self::$instance ) && ! ( self::$instance instanceof Inbound_Automation_Load_Extensions ) )
 		{
 			self::$instance = new Inbound_Automation_Load_Extensions;
-
-			/* Load Backend Processing Engine */
-			self::$Processor = Inbound_Automation_Processing();
 
 			/* Load Rules */
 			self::load_rules();
@@ -175,8 +172,8 @@ class Inbound_Automation_Load_Extensions {
 
 	}
 
-	public static function define_actions() {
-		self::$instance->actions = apply_filters( 'inbound_automation_actions' , array() );
+	public static function define_actions() {	
+		self::$instance->actions = apply_filters( 'inbound_automation_actions' , array() );	
 	}
 
 	/* Adds Listener Hooks for Building Filters and Rule Processings */
@@ -234,7 +231,7 @@ class Inbound_Automation_Load_Extensions {
 					/* Log Evaluation Message */
 					self::record_schedule_event( $rule , $arguments , $trigger , $evaluate );
 				
-					self::$Processor->add_job_to_queue( $rule , $arguments );
+					Inbound_Automation_Processing::add_job_to_queue( $rule , $arguments );
 				}
 			}
 		}

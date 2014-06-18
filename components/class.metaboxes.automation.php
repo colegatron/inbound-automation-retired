@@ -1688,6 +1688,22 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				case 'text':
 					$html .= '<input type="text" name="'.$args['name'] . ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . ( isset($args['action_type'] ) && $args['action_type'] ? '['.$args['action_type'].']' : '' ) . '['.$args['child_id'].']" '. ( isset($args['default'][$args['name']]) ? 'value="'.$args['default'][$args['name']].'"' : 'value=""' ) .'>';
 					break;
+				case 'checkbox':
+					//print_r($args);exit;
+						$html .=  "<table >";
+						
+						foreach ($args['options'] as $id=>$label) {
+								$html .= '<tr>';
+								$html .= '<td data-field-type="checkbox">';
+								$html .=  '<input type="checkbox"  name="'.$args['name'] . ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) .( isset($args['action_type'] ) && $args['action_type'] ? '['.$args['action_type'].']' : '' ) . '['.$args['child_id'].'][]" class="'.$args['class'].'" value="'.$id.'" '. ( isset($args['default'][$args['name']]) && in_array( $id , $args['default'][$args['name']] ) ? 'checked="checked"' : '' ) .'>';
+								$html .=  '<label for="'.$id.'">&nbsp;&nbsp;'.$label.'</label>';
+								$html .=  '</td>';
+								$html .=  "</tr>";			
+						}
+						
+						$html .=  "</table>";
+					//$html .=  '<div class="lp_tooltip tool_checkbox" title="'.$field['description'].'"></div>';
+					break;
 			}
 
 			return $html;

@@ -17,11 +17,12 @@ include_once('components/class.logs.automation.php');
 include_once('components/class.loader.automation.php');
 include_once('components/class.metaboxes.automation.php');
 
-include_once('definitions/trigger.save_lead.php');
-include_once('definitions/trigger.update_lead.php');
+include_once('definitions/trigger.form_submission_event.php');
+include_once('definitions/trigger.page_tracking_event.php');
 include_once('definitions/action.wait.php');
 include_once('definitions/action.send_email.php');
 include_once('definitions/action.relay_data.php');
+include_once('definitions/action.add_lead_to_list.php');
 include_once('definitions/query.lead_data.php');
 
 

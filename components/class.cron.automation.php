@@ -11,6 +11,7 @@ class Inbound_Automation_Processing {
 	public $queue;
 	
 	public static function instance() {	
+
 		if ( ! isset( self::$instance ) && ! ( self::$instance instanceof Inbound_Automation_Processing ) )
 		{
 			/* Load Inbound_Automation_Processing Class into Single Instance */
@@ -35,7 +36,6 @@ class Inbound_Automation_Processing {
 	*/
 	public static function load_static_variables() {
 	
-		self::$instance->event_hook_name = 'inbound_automation';
 		self::$instance->definitions = Inbound_Automation_Load_Extensions();
 
 	}
@@ -67,7 +67,7 @@ class Inbound_Automation_Processing {
 		/* Adds 'Every Two Minutes' to System Cron */
 		add_filter( 'cron_schedules', array( __CLASS__ , 'define_ping_interval' ) );
 		
-		add_action('init' , array( __CLASS__ , 'load_queue_hooks') );
+		add_action('init' , array( __CLASS__ , 'load_queue_hooks') , 12 );
 		
 		/* Add debug options to menu */
 		if ( is_admin() ) {
@@ -109,7 +109,7 @@ class Inbound_Automation_Processing {
 	public static function load_queue_hooks() {
 
 		self::$instance->queue = json_decode( get_option('inbound_automation_queue' , '') , true);
-
+		
 		if ( !self::$instance->queue || !is_array(self::$instance->queue) ) {
 			return;
 		}
@@ -535,7 +535,10 @@ class Inbound_Automation_Processing {
 	* Adds Cron Hook to System on Activation  - Create inbound_automation_queue in wp_options
 	*/
 	public static function add_cron_hook() {
-		wp_schedule_event( time(), 'every_two_minutes', self::$instance->event_hook_name );
+		/* Adds 'Every Two Minutes' to System Cron */
+		add_filter( 'cron_schedules', array( __CLASS__ , 'define_ping_interval' ) );
+		
+		wp_schedule_event( time(), 'every_two_minutes', 'inbound_automation' );
 		add_option( 'inbound_automation_queue' , null , null , 'no' );
 	}	
 	
@@ -543,7 +546,7 @@ class Inbound_Automation_Processing {
 	* Adds Cron Hook to System on Activation 
 	*/
 	public static function remove_cron_hook() {
-		wp_clear_scheduled_hook( self::$instance->event_hook_name );
+		wp_clear_scheduled_hook( 'inbound_automation' );
 	}
 	
 	/**
@@ -610,12 +613,13 @@ class Inbound_Automation_Processing {
 	function Inbound_Automation_Processing() {
 		return Inbound_Automation_Processing::instance();
 	}
-
-	$Inbound_Automation_Processing = Inbound_Automation_Processing();
-
+	
+	add_action('init' , function() {
+		Inbound_Automation_Processing();
+	} , 11 );
+	
 	/* Register Activation Hooks */
-	register_activation_hook( INBOUND_MARKETING_AUTOMATION_FILE , array( $Inbound_Automation_Processing , 'add_cron_hook' ) );
-	register_deactivation_hook( INBOUND_MARKETING_AUTOMATION_FILE , array( $Inbound_Automation_Processing , 'remove_cron_hook' ) );
+	register_activation_hook( INBOUND_MARKETING_AUTOMATION_FILE , array( 'Inbound_Automation_Processing' , 'add_cron_hook' ) );
+	register_deactivation_hook( INBOUND_MARKETING_AUTOMATION_FILE , array( 'Inbound_Automation_Processing' , 'remove_cron_hook' ) );
 
-	//print_r(json_decode( get_option('inbound_automation_queue' , '') , true));
 }
