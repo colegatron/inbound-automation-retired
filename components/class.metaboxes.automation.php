@@ -550,9 +550,18 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			}
 
 			if ($hook == 'post-new.php' || $hook == 'post.php') {
+				wp_enqueue_script('jquery-ui-core');
+				wp_enqueue_script('jquery-ui-accordion');
+				wp_enqueue_script(
+					'custom-accordion',
+					get_stylesheet_directory_uri() . '/js/accordion.js',
+					array('jquery')
+				);
+				//wp_enqueue_script('jquery-ui-sortable');
 				wp_enqueue_script( 'jquery-effects-core' );
 				wp_enqueue_script( 'jquery-effects-highlight' );
 				wp_enqueue_style( 'inbound_automation_admin_css' ,	INBOUND_MARKETING_AUTOMATION_URLPATH . 'css/automation/admin.post-edit.css' );
+				wp_enqueue_style('inbound-automation-admin-jquery-ui-css',	INBOUND_MARKETING_AUTOMATION_URLPATH . 'css/automation/jquery-ui.css');
 			}
 		}
 
@@ -711,7 +720,48 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				});
 			}
 
-			jQuery(document).ready(function($) {
+			jQuery(document).ready(function() {
+				
+				jQuery(".actions-container").accordion({
+					header: '> div > h3',
+					collapsible: true,
+					heightStyle: "content"
+				}).sortable({
+					axis: "y",
+					handle: "h3",
+					stop: function( event, ui ) {
+					  ui.item.children( "h3" ).triggerHandler( "focusout" );
+					  jQuery( this ).accordion( "refresh" );
+					}
+				});
+				
+				jQuery('.action-block-actions-container').accordion({
+					header: '> div > h4',
+					collapsible: true,
+					heightStyle: "content"
+				}).sortable({
+					axis: "y",
+					handle: "h4",
+					stop: function( event, ui ) {
+					  ui.item.children( "h4" ).triggerHandler( "focusout" );
+					  jQuery( this ).accordion( "refresh" );
+					}
+				});
+				
+				jQuery(".action-block-filters-container").accordion({
+					header: '> div > h4',
+					collapsible: true,
+					heightStyle: "content"
+				}).sortable({
+					axis: "y",
+					handle: "h4",
+					stop: function( event, ui ) {
+					  ui.item.children( "h3" ).triggerHandler( "focusout" );
+					  jQuery( this ).accordion( "refresh" );
+					}
+				});
+				
+				
 				jQuery('#minor-publishing').hide();
 				jQuery('#publish').val('Save Rule');
 
@@ -792,7 +842,6 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						success: function(html) {
 							/* Reveal Trigger Evaluation Options */
 							jQuery('.trigger-filter-evaluate').removeClass('nav-hide');
-
 							jQuery('#'+target_container).append(html);
 						}
 					});
@@ -839,6 +888,22 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						},
 						success: function(html) {
 							jQuery('#'+target_container).append(html);
+							var index = 0;
+							index = jQuery("#" +target_container +" h4").length - 1; 
+							jQuery(".action-block-filters-container").accordion({
+								header: '> div > h4',
+								collapsible: true,
+								active: index,
+								heightStyle: "content"
+							}).sortable({
+								axis: "y",
+								handle: "h4",
+								stop: function( event, ui ) {
+								  ui.item.children( "h3" ).triggerHandler( "focusout" );
+								  jQuery( this ).accordion( "refresh" );
+								}
+							});
+							jQuery('.action-block-filters-container').accordion('refresh');
 						}
 					});
 
@@ -884,6 +949,22 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						success: function(html) {
 							/* Reveal Trigger Evaluation Options */
 							jQuery('#'+target_container).append(html);
+							var index = 0;
+							index = jQuery('#'+target_container +" h4").length - 1; 
+							jQuery('.action-block-actions-container').accordion({
+								header: '> div > h4',
+								collapsible: true,
+								active: index,
+								heightStyle: "content"
+							}).sortable({
+								axis: "y",
+								handle: "h4",
+								stop: function( event, ui ) {
+								  ui.item.children( "h4" ).triggerHandler( "focusout" );
+								  jQuery( this ).accordion( "refresh" );
+								}
+							});
+							jQuery(".action-block-actions-container").accordion("refresh");
 						}
 					});
 
@@ -891,17 +972,38 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				/* Deletes Filter */
 				jQuery('body').on( 'click' , '.delete-filter' , function() {
-					jQuery(this).parent().parent().remove();
+					if(confirm('Are sure want to delete this filter?')){
+						var del_id = jQuery(this).attr('id');
+						del_id = del_id.replace('delete-filter-','');
+						jQuery(this).parent().parent().parent().parent().remove();
+						jQuery('h4#header-filter-' + del_id).remove();
+					} else {	
+						return false;
+					}
 				});
 
 				/* Deletes Action */
 				jQuery('body').on( 'click' , '.delete-action' , function() {
-					jQuery(this).parent().parent().parent().parent().remove();
+					if(confirm('Are sure want to delete this sub-action?')){
+						var del_id = jQuery(this).attr('id');
+						del_id = del_id.replace('delete-sublock-','');
+						jQuery(this).parent().parent().parent().parent().parent().parent().remove();
+						jQuery('h4#header-sublock-' + del_id).remove();
+					} else {	
+						return false;
+					}
 				});
 				
 				/* Deletes Action Block */
 				jQuery('body').on( 'click' , '.delete-action-block' , function() {
-					jQuery(this).parent().parent().remove();
+					if(confirm('Are sure want to delete this action block?')){
+						var del_id = jQuery(this).attr('id');
+						del_id = del_id.replace('delete-action-block-','');
+						jQuery(this).parent().parent().remove();
+						jQuery('h3#header-block-' + del_id).remove();
+					} else {	
+						return false;
+					}
 				});
 				
 				/* Deletes Action Block */
@@ -941,6 +1043,22 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						},
 						success: function(html) {
 							jQuery('.actions-container').append(html);
+							var index = 0;
+							index = jQuery(".actions-container h3").length - 1; 
+							jQuery(".actions-container").accordion({
+								header: '> div > h3',
+								collapsible: true,
+								active: index,
+								heightStyle: "content"
+							}).sortable({
+								axis: "y",
+								handle: "h3",
+								stop: function( event, ui ) {
+								  ui.item.children( "h3" ).triggerHandler( "focusout" );
+								  jQuery( this ).accordion( "refresh" );
+								}
+							}); 
+							jQuery('.actions-container').accordion('refresh');
 							populate_trigger_trigger_filters();
 							populate_actions();
 							populate_action_db_lookup_filters();
@@ -980,18 +1098,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			( isset($_REQUEST['action_block_priority']) ) ? $action_block_id = $_REQUEST['action_block_priority'] : $action_block_id;
 
 			$html = '';
-
 			switch ($action_block_type) {
 				case 'actions' :
-					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block'></div>";
+					$html .= "<div class='action-wrapper'><h3 id='header-block-".$action_block_id."'>Actions Block</h3>";
+					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."'>";
+					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
 					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
-					$html .= "	";
-					$html .= "	<legend class='handle'>";
-					$html .= "		Action Block";					
-					$html .= "	</legend>";					
+					$html .= "	";				
 					$html .= "		<fieldset id='action-block-if-then' class='action-block-actions'>";
 					$html .= "			<legend>Actions:</legend>";
 					$html .= "				<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
@@ -1025,20 +1140,18 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				</div>";
 					$html .= "		</fieldset>";
 					$html .= "</fieldset>";
-					$html .= "</div>";
+					$html .= "</div></div>";
 					//$html .= "<hr class='action-block-separator'>";
 					break;
 					
 				case 'if-then' :
+					$html .= "<div class='action-wrapper action-wrapper-if-then'><h3 id='header-block-".$action_block_id."'>IF/Then Action Block</h3>";
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block'></div>";
+					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
 					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
-					$html .= "	";
-					$html .= "	<legend class='handle'>";
-					$html .= "		IF/Then Action Block";					
-					$html .= "	</legend>";					
+					$html .= "	";				
 					$html .= "		<fieldset id='action-block-if-then-conditions' class='action-block-conditions'>";
 					$html .= "			<legend>Conditions:</legend>";
 					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
@@ -1094,6 +1207,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						//print_r($block);
 						foreach ( $block['actions']['then'] as $child_id => $action ) {
 
+
 							$args = array(
 								'action_name' => $action['action_name'],
 								'action_type' => 'then',
@@ -1111,21 +1225,17 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				</div>";
 					$html .= "		</fieldset>";
 					$html .= "</fieldset>";
-					$html .= "</div>";
+					$html .= "</div></div>";
 					//$html .= "<hr class='action-block-separator'>";
 					break;
 					
-					
-					
-					
 				case 'if-then-else' :
-				
+					$html .= "<div class='action-wrapper action-wrapper-if-then-else'><h3 id='header-block-".$action_block_id."'>IF/Then/Else Action Block</h3>";	
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block'></div>";
+					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
 					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
-					$html .= "	<legend class='handle'>IF/Then/Else Action Block</legend>";
 					$html .= "		<fieldset id='action-block-if-then-else-conditions' class='action-block-conditions'>";
 					$html .= "			<legend>Conditions:</legend>";
 					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
@@ -1205,7 +1315,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='else-action-select-dropdown-".$action_block_id."' data-action-container='action-block-else-actions-container-".$action_block_id."'	data-action-type='else'	data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "					Add Action";
 					$html .= "				</span>";
-					$html .= "				<div class='action-block-else-actions-container' id='action-block-else-actions-container-".$action_block_id."' >";
+					$html .= "				<div class='action-block-else-actions-container action-block-actions-container' id='action-block-else-actions-container-".$action_block_id."' >";
 					
 					/* Prepare Actions if Action Block Manually Evoked */
 					if ( isset( $block['actions']['else'] ) ) {
@@ -1230,22 +1340,20 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				</div>";
 					$html .= "		</fieldset>";
 					$html .= "</fieldset>";
-					$html .= "</div>";
+					$html .= "</div></div>";
 					//$html .= "<hr class='action-block-separator'>";
 					break;
 					
 					
 					
 				case 'while':
+					$html .= "<div class='action-wrapper  action-wrapper-while'><h3 id='header-block-".$action_block_id."'>While Action Block</h3>";	
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block'></div>";
+					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
 					$html .= "<fieldset id='action-block-while' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
-					$html .= "	";
-					$html .= "	<legend class='handle'>";
-					$html .= "		While Action Block";					
-					$html .= "	</legend>";					
+					$html .= "	";				
 					$html .= "		<fieldset id='action-block-while-conditions' class='action-block-conditions'>";
 					$html .= "			<legend>Conditions:</legend>";
 					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
@@ -1318,7 +1426,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				</div>";
 					$html .= "		</fieldset>";
 					$html .= "</fieldset>";
-					$html .= "</div>";
+					$html .= "</div></div>";
 					//$html .= "<hr class='action-block-separator'>";
 					break;
 			}
@@ -1393,9 +1501,12 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$key_input = self::build_input( $key_args );
 			$compare_input = self::build_input( $compare_args );
 			$value_input = self::build_input( $value_args );
+			$header_name = str_replace('_', ' ', $this_arg);
+			$header_name = ucfirst(strtolower($header_name)); 	
 
 			$html = "<div class='filter-container'>";
-			$html .= "<table class='table-filter' data-child-id='".$args['child_id']."'>";
+			$html .= "<h4 id='header-filter-".$args['action_block_id']."-".$args['child_id']."' class='filter-header'".$header_name."</h4>";
+			$html .= "<div><table class='table-filter' data-child-id='".$args['child_id']."'>";
 			$html .= "	<tr class='tr-filter'>";
 			$html .= "		<td class='td-filter-key'>";
 			$html .= "			<input type='hidden' name='".$args['input_name_filter_id']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . "[".$args['child_id']."]' value='".$this_arg."'>";
@@ -1408,11 +1519,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html .= 			$value_input;
 			$html .= "		</td>";
 			$html .= "		<td class='td-filter-delete'>";
-			$html .= "			<img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/delete.png' class='delete-filter'>";
+			$html .= "			<img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-filter' id='delete-filter-".$args['action_block_id']."-".$args['child_id']."'>";
 			$html .= "		</td>";
 			$html .= "	</tr>";
 			$html .= "</table>";
-			$html .= "</div>";
+			$html .= "</div></div>";
 
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				echo $html;
@@ -1484,9 +1595,12 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$key_input = self::build_input( $key_args );
 			$compare_input = self::build_input( $compare_args );
 			$value_input = self::build_input( $value_args );
+			$header_name = str_replace('_', ' ', $this_filter);
+			$header_name = ucfirst(strtolower($header_name)); 	
 
 			$html = "<div class='filter-container'>";
-			$html .= "<table class='table-filter' data-child-id='".$args['child_id']."'>";
+			$html .= "<h4 id='header-filter-".$args['action_block_id']."-".$args['child_id']."' class='filter-header'>".$header_name."</h4>";
+			$html .= "<div><table class='table-filter' data-child-id='".$args['child_id']."'>";
 			$html .= "	<tr class='tr-filter'>";
 			$html .= "		<td class='td-filter-key'>";
 			$html .= "			<input type='hidden' name='".$args['input_name_filter_id']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . "[".$args['child_id']."]' value='".$this_filter."'>";
@@ -1499,11 +1613,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html .= 			$value_input;
 			$html .= "		</td>";
 			$html .= "		<td class='td-filter-delete'>";
-			$html .= "			<img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/delete.png' class='delete-filter'>";
+			$html .= "			<img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-filter' id='delete-filter-".$args['action_block_id']."-".$args['child_id']."'>";
 			$html .= "		</td>";
 			$html .= "	</tr>";
 			$html .= "</table>";
-			$html .= "</div>";
+			$html .= "</div></div>";
 
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				echo $html;
@@ -1540,15 +1654,16 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			} else if ($this_action == '-1' ) {
 				return '';
 			}
+			$header_name = str_replace('_', ' ', $this_action);
+			$header_name = ucfirst(strtolower($header_name)); 	
 
-
-			$html = "<div class='action-container'>";
+			$html = "<div class='action-sub-wrapper'><h4 id='header-sublock-".$args['action_block_id']."-".$args['child_id']."'>".$header_name."</h4><div class='action-container'>";
 			$html .= "<table class='table-action' data-child-id='".$args['child_id']."'>";
 			$html .= "	<tr class='tr-action'>";
 			$html .= "		<td class='td-action-setting-label' colspan=2>";
 			$html .= "			";
 			$html .= "			<input type='hidden' name='".$args['input_action_name_name']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . ( isset($args['action_type'] ) && $args['action_block_id'] ? '['.$args['action_type'].']' : '' ) . "[".$args['child_id']."]' value='".$this_action."'>";
-			$html .= "			<div class='action-delete'><strong>".$actions[$args['action_name']]['label']."</strong> <img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/delete.png' class='delete-action delete-img'></div>";
+			$html .= "			<div class='action-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action delete-img' id='delete-sublock-".$args['action_block_id']."-".$args['child_id']."'></div>";
 			$html .= "		</td>";
 			$html .= "	</tr>";
 
@@ -1598,7 +1713,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 
 			$html .= "</table>";
-			$html .= "</div>";
+			$html .= "</div></div>";
 
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				echo $html;
