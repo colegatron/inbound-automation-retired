@@ -121,20 +121,18 @@ class Inbound_Automation_Processing {
 				$rule_id = $job['rule']['ID'];
 				$job = Inbound_Automation_Processing::run_job( $job );
 				
-				/* Tell Log The Job Has Completed */
-				$remaining_actions = Inbound_Automation_Processing::json_indent( $job['rule']['meta']['automation_action_blocks'][0] );
-				inbound_record_log(  'End Job' , '<h2>Actions Left</h2> <pre>' . $remaining_actions .'</pre><h2>Raw Job Data</h2><pre>' . Inbound_Automation_Processing::json_indent( json_encode($job) ) . '</pre>', $rule_id , 'processing_event' );
 				
 				/* Remove Job from Rule Queue if Empty */
 				if (!$job) {				
 					unset( Inbound_Automation_Processing::$instance->queue[ $job_id ] );
-					inbound_record_log(  'Job Completed' , 'This job has successfully completed all it\'s tasks.' , $rule_id , 'processing_event' );
-				} 
-				
-				/* Update Job Object If Not */
-				else {
+					inbound_record_log(  __( 'Job Completed' , 'marketing-automation' ) , 'This job has successfully completed all it\'s tasks.' , $rule_id , 'processing_event' );
+				} else {
+					/* Tell Log The Job Has Completed */
+					$remaining_actions = Inbound_Automation_Processing::json_indent( $job['rule']['meta']['automation_action_blocks'][0] );
+					inbound_record_log(  __( 'End Current Job Taks' , 'marketing-automation' ) , '<h2>Actions Left</h2> <pre>' . $remaining_actions .'</pre><h2>Raw Job Data</h2><pre>' . Inbound_Automation_Processing::json_indent( json_encode($job) ) . '</pre>', $rule_id , 'processing_event' );
 					Inbound_Automation_Processing::$instance->queue[ $job_id ] = $job;
-				}
+				}				
+				
 				
 				/* Update Rule Queue After Completed Job */
 				Inbound_Automation_Processing::$instance->queue = update_option('inbound_automation_queue' , json_encode( Inbound_Automation_Processing::$instance->queue ) );
@@ -340,7 +338,6 @@ class Inbound_Automation_Processing {
 			
 			/* Add Extra Data to $block for Log Event */			
 			$block['arguments'] = $arguments;
-			$block['argument_pointer'] = $key;
 			$block['evaluated'] = $evaluate;
 			$block['evals'] = $evals;
 			

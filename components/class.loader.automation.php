@@ -437,8 +437,7 @@ class Inbound_Automation_Load_Extensions {
 	/* Builds Filter Keys from Paramater Data Associated with Hook and Stores them in wp_options Table */
 	public static function update_filter( $action_hook , $filter_name , $filter ) {
 		$option_name = $action_hook . '_' . $filter_name ;
-		echo hello;
-		echo $option_name;	
+
 		if (  $filter_keys = get_option( 'inbound_store_lead_post_lead_data' )  ) {
 			$filter = array_merge( $filter_keys , $filter );
 			ksort($filter);
