@@ -122,18 +122,31 @@
 	border-spacing:10px 50px;
 
 }
+.action-sub-wrapper{
+
+position: relative;	
+	
+}
 
 .action-delete {
 	width:100%;
 	top:0px;
 	text-align:right;
-	position:relative;
-	border-bottom: #000;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
+	position:absolute;
 	cursor: move;
 	margin-bottom:10px;
+	top:2px;
+	right:10px;
 	
+}
+
+.filter-container{
+	position: relative; 
+}
+.td-filter-delete {
+	position: absolute;
+    right: 10px;
+    top: 0;
 }
 
 .action-block-delete {
@@ -157,4 +170,7 @@
 .action-block-delete {
 	
 
+}
+.action-filter-key {
+    width: 220px;
 }
