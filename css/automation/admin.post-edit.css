@@ -8,18 +8,20 @@
 	display:block;
 }
 
+.navlink {
+	text-decoration:none;
+}
 
 /* Triggers */
 .table-trigger-container { 
 	width:100%;
 	padding-right:20px;
-	padding-left:20px;
+	/* padding-left:20px; */
 }
 
 .table-trigger-container .td-trigger-select{ 
 	width:144px;
 	padding-right:20px;
-	padding-left:20px;
 }
 
 .td-trigger-select-dropdown {
@@ -49,9 +51,34 @@
 }
 
 /* Filters */
+.table-filter {
+	width:100%;
+}
+
+
+.table-filter select {
+	font-size:12px;
+}
+
+.trigger-filters a {
+	text-decoration:none;
+	cursor:pointer;
+}
+
+.tr-filter-select .btn-group {
+	float:right;
+	margin-bottom: 10px;
+}
+
 .trigger-filter-evaluate {
 	margin-top:5px;
 	margin-bottom:5px;
+	display:inline;
+}
+
+.trigger-filter-evaluate  .btn-group {
+	float:right;
+	
 }
 
 .label-evaluate {
@@ -128,6 +155,10 @@ position: relative;
 	
 }
 
+.td-filter-value, .td-filter-value input {
+	width:100%;
+}
+
 .action-delete {
 	width:100%;
 	top:0px;
@@ -137,17 +168,27 @@ position: relative;
 	margin-bottom:10px;
 	top:2px;
 	right:10px;
-	
+}
+
+.td-filter-delete {
+	text-align:right;
+	padding:0px;
+	vertical-align:top;
+}
+
+.td-filter-delete .btn-mini {
+	padding: 3px 12px;
+	float:right;
+}
+
+.fa-times {
+	font-size:10px;
 }
 
 .filter-container{
 	position: relative; 
 }
-.td-filter-delete {
-	position: absolute;
-    right: 10px;
-    top: 0;
-}
+
 
 .action-block-delete {
 

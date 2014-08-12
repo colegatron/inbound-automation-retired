@@ -123,31 +123,33 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$nav_elements = array(
 				array(
 					'id' => 'trigger-container',
-					'label' => 'Setup Trigger',
+					'label' => 'Trigger',
 					'class' => 'nav_trigger',
 					'default' => true
 					),
 				array(
 					'id' => 'actions-container',
-					'label' => 'Setup Actions',
+					'label' => 'Actions',
 					'class' => 'nav_actions',
 					),
 				array(
 					'id' => 'logs-container',
-					'label' => 'View Logs',
+					'label' => 'Logs',
 					'class' => 'nav_logs',
 					)
 			);
 
 			$nav_elements = apply_filters( 'inbound_automation_nav_elements' , $nav_elements );
 
-			echo '<h2 class="nav-tab-wrapper" style="">';
+			echo '<ul class="nav nav-pills">';
 
 			foreach ($nav_elements as $nav) {
-				echo '<a class="nav-tab '.( isset($nav['default']) && $nav['default']	? 'nav-tab-active' : '' ).' '.( isset($nav['class']) ? $nav['class'] : '' ) .'" id="'.$nav['id'].'"	style="margin-bottom:-4px;">'.$nav['label'].'</a>';
+				echo '<li class="'.( isset($nav['default']) && $nav['default']	? 'active' : '' ).' '.( isset($nav['class']) ? $nav['class'] : '' ) .'" >';
+				echo '<a href="#" class="navlink" id="'.$nav['id'].'">' . $nav['label'] . '</a>';
+				echo '</li>';
 			}
 
-			echo '</h2>';
+			echo '</ul>';
 		}
 
 		public static function print_trigger_container() {
@@ -156,11 +158,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			<div class='nav-container nav-reveal trigger-container' id='trigger-container'>
 				<table class='table-trigger-container'>
 					<tr class='tr-trigger-select'>
-						<td class='td-trigger-select' >
-							Define Trigger
-						</td>
 						<td>
-							<select class='trigger-dropdown' id='trigger-dropdown' name='trigger'>
+							<h2>Select Trigger </h2>
+							<select class='trigger-dropdown form-control' id='trigger-dropdown' name='trigger'>
 							<?php
 							echo '<option value="-1" class="">Select Trigger</option>';
 							foreach ( self::$triggers as $hook => $trigger ) {
@@ -176,21 +176,36 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						</td>
 					</tr>
 					<tr class="tr-filter-select">
-						<td class='td-trigger-select' >
-							Add Trigger Data Condition
-						</td>
 						<td class='td-filter-add-dropdown' id='argument-filters-container'>
-							<select class='trigger-filter-select-dropdown' id='trigger-arguments-filter-select-dropdown' name='argument-filters'	>
-								<option value="-1" class="">Select Condition</option>
-							</select>
-							<span class='button add-trigger-filter' id='' data-dropdown-id='trigger-arguments-filter-select-dropdown' data-filter-container='argument-filters-container' data-filter-input-filter-id='trigger_argument_id' data-filter-input-key-name='trigger_filter_key' data-filter-input-compare-name='trigger_filter_compare' data-filter-input-value-name='trigger_filter_value'>
-								Add Condition
-							</span>
+							<h2> Define Conditions
 							<div class='trigger-filter-evaluate <?php if ( !isset( self::$trigger_filters ) ||	count(self::$trigger_filters) < 1 ) { echo 'nav-hide'; } ?>'>
-									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-all' <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'checked="checked"'; } ?>> Match All</span>
-									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-any' <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'checked="checked"'; } ?>> Match Any</span>
-									<span class='label-evaluate'><input type='radio' name='trigger_filters_evaluate' value='match-none' <?php if ( self::$trigger_evaluate == 'match-none' ) { echo 'checked="checked"'; } ?>> Match None</span>
+								<div class="btn-group" data-toggle="buttons">
+								<label class="btn btn-default  <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'active'; } ?>">
+									<input type='radio' name='trigger_filters_evaluate' value='match-all' <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'checked="checked"'; } ?>> Match All
+								</label>	
+								<label class="btn btn-default  <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'active'; } ?>">
+									<input type='radio' name='trigger_filters_evaluate' value='match-any' <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'checked="checked"'; } ?>> Match Any
+								</label>
+								<label class="btn btn-default  <?php if ( self::$trigger_evaluate == 'match-none' ){ echo 'active'; } ?>">
+									<input type='radio' name='trigger_filters_evaluate' value='match-none' <?php if ( self::$trigger_evaluate == 'match-none' ) { echo 'checked="checked"'; } ?>> Match None
+								</label>
 							</div>
+							</h2>
+							<br>
+							
+							
+							
+							
+							<div class="btn-group add-filter">
+							  <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" >
+								Add Filter <span class="caret"></span>
+							  </button>
+							  <ul class="dropdown-menu trigger-filters" role="menu" >
+								<li><a >Select a trigger...</a></li>
+							  </ul>
+							</div>
+							
+							
 							<?php
 							/* Load Trigger Filters if available */
 							if ( isset( self::$trigger_filters ) ) {
@@ -259,10 +274,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 		public static function print_logs_container() {
 			global $inbound_automation_logs, $post;
-			//update_post_meta( $post->ID , '_automation_logs' ,  '' );
-			echo '<pre>';
-			//echo get_post_meta( $post->ID , '_automation_logs' , true );
-			echo '</pre>';
+
 			$logs = array_reverse( $inbound_automation_logs->get_logs( $post->ID ) , true );
 			
 			?>
@@ -550,18 +562,44 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			}
 
 			if ($hook == 'post-new.php' || $hook == 'post.php') {
+			
 				wp_enqueue_script('jquery-ui-core');
 				wp_enqueue_script('jquery-ui-accordion');
+				
 				wp_enqueue_script(
 					'custom-accordion',
-					get_stylesheet_directory_uri() . '/js/accordion.js',
+					get_stylesheet_directory_uri() . '/includes/accordion.js',
 					array('jquery')
 				);
+				
 				//wp_enqueue_script('jquery-ui-sortable');
 				wp_enqueue_script( 'jquery-effects-core' );
 				wp_enqueue_script( 'jquery-effects-highlight' );
+				
 				wp_enqueue_style( 'inbound_automation_admin_css' ,	INBOUND_MARKETING_AUTOMATION_URLPATH . 'css/automation/admin.post-edit.css' );
 				wp_enqueue_style('inbound-automation-admin-jquery-ui-css',	INBOUND_MARKETING_AUTOMATION_URLPATH . 'css/automation/jquery-ui.css');
+				
+				/* load BootStrap */
+				wp_register_script( 'bootstrap-js' , INBOUND_MARKETING_AUTOMATION_URLPATH .'includes/libraries/BootStrap/js/bootstrap.min.js');
+				wp_enqueue_script( 'bootstrap-js' );
+			
+				wp_register_style( 'bootstrap-css' , INBOUND_MARKETING_AUTOMATION_URLPATH . 'includes/libraries/BootStrap/css/bootstrap.css');
+				wp_enqueue_style( 'bootstrap-css' );
+				
+				/* Load FontAwesome */
+				wp_register_style( 'font-awesome' , INBOUND_MARKETING_AUTOMATION_URLPATH . 'includes/libraries/FontAwesome/css/font-awesome.min.css');
+				wp_enqueue_style( 'font-awesome' );
+				
+				/* Load Select2 
+				wp_register_script( 'select2-js' , INBOUND_MARKETING_AUTOMATION_URLPATH .'includes/libraries/Select2/select2.min.js');
+				wp_enqueue_script( 'select2-js' );
+			
+				wp_register_style( 'select2-css' , INBOUND_MARKETING_AUTOMATION_URLPATH . 'includes/libraries/Select2/select2.css');
+				wp_enqueue_style( 'select2-css' );
+				
+				wp_register_style( 'select2-bootstrap-css' , INBOUND_MARKETING_AUTOMATION_URLPATH . 'includes/libraries/Select2/select2-bootstrap.css');
+				wp_enqueue_style( 'select2-bootstrap-css' );
+				*/
 			}
 		}
 
@@ -590,7 +628,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				jQuery('.trigger-filter-select-dropdown').prop( 'disabled' , true );
 
 				/* rumble time */
-				jQuery('.tr-filter-select').effect('highlight');
+				//jQuery('.tr-filter-select').effect('highlight');
 
 				jQuery.ajax({
 					type: "GET",
@@ -603,16 +641,17 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					},
 					success: function(filters) {
 						/* clear old options */
-						jQuery('.trigger-filter-select-dropdown option:gt(0)').remove();
+						jQuery('.trigger-filters').empty();
 
 						/* populate new options */
 						var html = '';
 						var len = filters.length;
 
 						for (var i = 0; i< len; i++) {
-							html += '<option value="' + filters[i].id + '">' + filters[i].label + '</option>';
+							html += '<li><a class="add-trigger-filter" id="' + filters[i].id + '">' + filters[i].label + '</a></li>';
 						}
-						jQuery('.trigger-filter-select-dropdown').append(html);
+						
+						jQuery('.trigger-filters').append(html);
 
 
 						/* enable select box */
@@ -722,6 +761,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 			jQuery(document).ready(function() {
 				
+				/* Initialize Select 2 on Select Elements */
+				//jQuery('select').select2();
+				
+				
 				jQuery(".actions-container").accordion({
 					header: '> div > h3',
 					collapsible: true,
@@ -766,13 +809,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				jQuery('#publish').val('Save Rule');
 
 				/* Switch Nav Containers on Tab Click */
-				jQuery('body').on( 'click' , '.nav-tab' , function() {
+				jQuery('body').on( 'click' , '.navlink' , function() {
 
 					var container_id = this.id;
-
-					jQuery('.nav-tab').removeClass('nav-tab-active');
-					jQuery(this).addClass('nav-tab-active');
-
+					 
+					/* Toggle correct nav tab */
+					jQuery('.nav-pills li').removeClass('active');
+					jQuery(this).parent('li').addClass('active');
+					
+					/* Toggle correct UI container */
 					jQuery( '.nav-container' ).removeClass('nav-reveal');
 					jQuery( '.nav-container' ).addClass('nav-hide');
 					jQuery( '.'+container_id ).addClass('nav-reveal');
@@ -803,14 +848,13 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				/* Adds Trigger Argument Filters to Trigger Conditions */
 				jQuery('body').on( 'click' , '.add-trigger-filter' , function() {
 					
-					var dropdown_id = jQuery(this).attr('data-dropdown-id');
-					var filter_id = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
+					var filter_id = jQuery(this).attr('id');
 
-					var target_container = jQuery(this).attr('data-filter-container');
-					var filter_input_filter_id_name = jQuery(this).attr('data-filter-input-filter-id');
-					var filter_input_key_name = jQuery(this).attr('data-filter-input-key-name');
-					var filter_input_compare_name = jQuery(this).attr('data-filter-input-compare-name');
-					var filter_input_value_name = jQuery(this).attr('data-filter-input-value-name');
+					var target_container = 'argument-filters-container';
+					var filter_input_filter_id_name = 'trigger_argument_id';
+					var filter_input_key_name = 'trigger_filter_key';
+					var filter_input_compare_name = 'trigger_filter_compare';
+					var filter_input_value_name = 'trigger_filter_value';
 
 					var child_id = jQuery( "body" ).find( '#' + target_container + ' .table-filter:last' ).attr( 'data-child-id' );
 
@@ -1102,14 +1146,14 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				case 'actions' :
 					$html .= "<div class='action-wrapper'><h3 id='header-block-".$action_block_id."'>Actions Block</h3>";
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."'>";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
+					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
 					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
 					$html .= "	";				
 					$html .= "		<fieldset id='action-block-if-then' class='action-block-actions'>";
 					$html .= "			<legend>Actions:</legend>";
-					$html .= "				<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
+					$html .= "				<select class='action-select-dropdown select2' id='action-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Action</option>";
 					$html .= "				</select>";
 					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
@@ -1147,7 +1191,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				case 'if-then' :
 					$html .= "<div class='action-wrapper action-wrapper-if-then'><h3 id='header-block-".$action_block_id."'>IF/Then Action Block</h3>";
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
+					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
 					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
@@ -1232,7 +1276,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				case 'if-then-else' :
 					$html .= "<div class='action-wrapper action-wrapper-if-then-else'><h3 id='header-block-".$action_block_id."'>IF/Then/Else Action Block</h3>";	
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
+					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
 					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
@@ -1349,7 +1393,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				case 'while':
 					$html .= "<div class='action-wrapper  action-wrapper-while'><h3 id='header-block-".$action_block_id."'>While Action Block</h3>";	
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action-block ' title='Delect Action Block' id='delete-action-block-".$action_block_id."'></div>";
+					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
 					$html .= "<fieldset id='action-block-while' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
@@ -1509,7 +1553,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html .= "<div><table class='table-filter' data-child-id='".$args['child_id']."'>";
 			$html .= "	<tr class='tr-filter'>";
 			$html .= "		<td class='td-filter-key'>";
-			$html .= "			<input type='hidden' name='".$args['input_name_filter_id']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . "[".$args['child_id']."]' value='".$this_arg."'>";
+			$html .= "			<input type='hidden' name='".$args['input_name_filter_id']. "[".$args['child_id']."]' value='".$this_arg."'>";
 			$html .= 			$key_input;
 			$html .= "		</td>";
 			$html .= "		<td class='td-filter-compare'>";
@@ -1519,7 +1563,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html .= 			$value_input;
 			$html .= "		</td>";
 			$html .= "		<td class='td-filter-delete'>";
-			$html .= "			<img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-filter' id='delete-filter-".$args['action_block_id']."-".$args['child_id']."'>";
+			$html .= "			<button class='btn btn-default btn-mini delete-filter' title='Delete Trigger Filter' id='delete-filter-".$args['child_id']."'><i class='fa fa-times'></i></button>";
 			$html .= "		</td>";
 			$html .= "	</tr>";
 			$html .= "</table>";
@@ -1613,7 +1657,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html .= 			$value_input;
 			$html .= "		</td>";
 			$html .= "		<td class='td-filter-delete'>";
-			$html .= "			<img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-filter' id='delete-filter-".$args['action_block_id']."-".$args['child_id']."'>";
+			$html .= "			<button class='btn btn-danger btn-small delete-filter' title='Delete Action Filter' id='delete-filter-".$args['action_block_id']."-".$args['child_id']."'><span class='glyphicon glyphicon-remove-sign'></span></button>";
 			$html .= "		</td>";
 			$html .= "	</tr>";
 			$html .= "</table>";
