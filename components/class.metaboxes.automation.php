@@ -159,7 +159,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				<table class='table-trigger-container'>
 					<tr class='tr-trigger-select'>
 						<td>
-							<h2>Select Trigger </h2>
+							<h2>Define Trigger</h2>
 							<select class='trigger-dropdown form-control' id='trigger-dropdown' name='trigger'>
 							<?php
 							echo '<option value="-1" class="">Select Trigger</option>';
@@ -177,32 +177,26 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					</tr>
 					<tr class="tr-filter-select">
 						<td class='td-filter-add-dropdown' id='argument-filters-container'>
-							<h2> Define Conditions
+							<h2>Define Conditions</h2>
 							<div class='trigger-filter-evaluate <?php if ( !isset( self::$trigger_filters ) ||	count(self::$trigger_filters) < 1 ) { echo 'nav-hide'; } ?>'>
 								<div class="btn-group" data-toggle="buttons">
-								<label class="btn btn-default  <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'active'; } ?>">
+								<label class="btn btn-default	<?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'active'; } ?>">
 									<input type='radio' name='trigger_filters_evaluate' value='match-all' <?php if (	!self::$trigger_evaluate || self::$trigger_evaluate == 'match-all' ){ echo 'checked="checked"'; } ?>> Match All
 								</label>	
-								<label class="btn btn-default  <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'active'; } ?>">
+								<label class="btn btn-default	<?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'active'; } ?>">
 									<input type='radio' name='trigger_filters_evaluate' value='match-any' <?php if ( self::$trigger_evaluate == 'match-any' ){ echo 'checked="checked"'; } ?>> Match Any
 								</label>
-								<label class="btn btn-default  <?php if ( self::$trigger_evaluate == 'match-none' ){ echo 'active'; } ?>">
+								<label class="btn btn-default	<?php if ( self::$trigger_evaluate == 'match-none' ){ echo 'active'; } ?>">
 									<input type='radio' name='trigger_filters_evaluate' value='match-none' <?php if ( self::$trigger_evaluate == 'match-none' ) { echo 'checked="checked"'; } ?>> Match None
 								</label>
-							</div>
-							</h2>
-							<br>
-							
-							
-							
-							
+							</div>							
 							<div class="btn-group add-filter">
-							  <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" >
+								<button type="button" class="btn btn-warning dropdown-toggle ladda-button" data-style="expand-right" data-toggle="dropdown" id='add-trigger-filter-button'>
 								Add Filter <span class="caret"></span>
-							  </button>
-							  <ul class="dropdown-menu trigger-filters" role="menu" >
+								</button>
+								<ul class="dropdown-menu trigger-filters" role="menu" >
 								<li><a >Select a trigger...</a></li>
-							  </ul>
+								</ul>
 							</div>
 							
 							
@@ -243,14 +237,20 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			
 			?>
 			<div class='nav-container nav-hide actions-container' id='actions-container' >
-				<table class='table-trigger-container'>
-					<tr class='tr-button-block'>
-						<a href="#" id="actions" class="add-action-block button button-secondary full-row-button">Add Actions</a>
-						<a href="#" id="if-then" class="add-action-block button button-secondary full-row-button">Add If/Then Actions</a>
-						<a href="#" id="if-then-else" class="add-action-block button button-secondary full-row-button">Add If/Then/Else Actions</a>
-						<a href="#" id="while" class="add-action-block button button-secondary full-row-button">Add While Actions</a>
-					</tr>
-				</table>
+				<!-- Split button -->				
+				<div class="btn-group btn-group-justified add-actions">
+					<div class="btn-group open">
+						<a type="button" class="btn btn-default ladda-button" data-style="expand-down" data-spinner-color="#000000" data-toggle="dropdown" id='add-actions-button'>
+							Add Actions <span class="caret"></span>
+						</a>
+						<ul class="dropdown-menu" role="menu">
+							<li><a  id="actions" class="add-action-block">If Actions</a></li>
+							<li><a  id="if-then" class="add-action-block">If/Then Actions</a></li>
+							<li><a  id="if-then-else" class="add-action-block">If/Then/Else Actions</a></li>
+						</ul>
+					</div>
+				</div>
+				<br><br>
 
 				<?php
 
@@ -425,6 +425,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				update_post_meta( $post_id, 'automation_trigger_filters_evaluate', $_POST[ 'trigger_filters_evaluate' ] );
 			}
 
+
 			/* Save Action Blocks */
 			if ( isset ( $_POST['action_block_id'] ) ) {
 
@@ -436,7 +437,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					if ( isset( $_POST['action_block_type'][$block_id] ) ) {
 						$action_blocks[$block_id]['action_block_id'] = $_POST['action_block_id'][$block_id];
 						$action_blocks[$block_id]['action_block_type'] = $_POST['action_block_type'][$block_id];
-						$action_blocks[$block_id]['action_block_filters_evaluate'] = $_POST['action_block_filters_evaluate'][$block_id];
+						if (isset($_POST['action_block_filters_evaluate'][$block_id])) {
+							$action_blocks[$block_id]['action_block_filters_evaluate'] = $_POST['action_block_filters_evaluate'][$block_id];
+						}
 					}
 
 					/* Get Action Filter Conditions for this block if they exist */
@@ -529,7 +532,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					}
 				}
 		
-				//print_r($action_blocks);exit;
+
 				/* Save Actions */
 				$action_blocks = json_encode( $action_blocks );
 				update_post_meta( $post_id, 'automation_action_blocks' , $action_blocks );
@@ -583,8 +586,21 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				wp_register_script( 'bootstrap-js' , INBOUND_MARKETING_AUTOMATION_URLPATH .'includes/libraries/BootStrap/js/bootstrap.min.js');
 				wp_enqueue_script( 'bootstrap-js' );
 			
+				/* BootStrap CSS */
 				wp_register_style( 'bootstrap-css' , INBOUND_MARKETING_AUTOMATION_URLPATH . 'includes/libraries/BootStrap/css/bootstrap.css');
 				wp_enqueue_style( 'bootstrap-css' );
+				
+				/* Spin.min.js - For button loading effect */
+				wp_register_script( 'spin-js' , INBOUND_MARKETING_AUTOMATION_URLPATH .'includes/libraries/BootStrap/js/spin.min.js');
+				wp_enqueue_script( 'spin-js' );
+			
+				/* Ladda.min.js - For button loading effect*/
+				wp_register_script( 'ladda-js' , INBOUND_MARKETING_AUTOMATION_URLPATH .'includes/libraries/BootStrap/js/ladda.min.js');
+				wp_enqueue_script( 'ladda-js' );
+				
+				/* Load FontAwesome */
+				wp_register_style( 'ladda-css' , INBOUND_MARKETING_AUTOMATION_URLPATH . 'includes/libraries/BootStrap/css/ladda-themeless.min.css');
+				wp_enqueue_style( 'ladda-css' );
 				
 				/* Load FontAwesome */
 				wp_register_style( 'font-awesome' , INBOUND_MARKETING_AUTOMATION_URLPATH . 'includes/libraries/FontAwesome/css/font-awesome.min.css');
@@ -762,7 +778,6 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			jQuery(document).ready(function() {
 				
 				/* Initialize Select 2 on Select Elements */
-				//jQuery('select').select2();
 				
 				
 				jQuery(".actions-container").accordion({
@@ -773,8 +788,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					axis: "y",
 					handle: "h3",
 					stop: function( event, ui ) {
-					  ui.item.children( "h3" ).triggerHandler( "focusout" );
-					  jQuery( this ).accordion( "refresh" );
+						ui.item.children( "h3" ).triggerHandler( "focusout" );
+						jQuery( this ).accordion( "refresh" );
 					}
 				});
 				
@@ -786,8 +801,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					axis: "y",
 					handle: "h4",
 					stop: function( event, ui ) {
-					  ui.item.children( "h4" ).triggerHandler( "focusout" );
-					  jQuery( this ).accordion( "refresh" );
+						ui.item.children( "h4" ).triggerHandler( "focusout" );
+						jQuery( this ).accordion( "refresh" );
 					}
 				});
 				
@@ -799,8 +814,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					axis: "y",
 					handle: "h4",
 					stop: function( event, ui ) {
-					  ui.item.children( "h3" ).triggerHandler( "focusout" );
-					  jQuery( this ).accordion( "refresh" );
+						ui.item.children( "h3" ).triggerHandler( "focusout" );
+						jQuery( this ).accordion( "refresh" );
 					}
 				});
 				
@@ -812,7 +827,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				jQuery('body').on( 'click' , '.navlink' , function() {
 
 					var container_id = this.id;
-					 
+					
 					/* Toggle correct nav tab */
 					jQuery('.nav-pills li').removeClass('active');
 					jQuery(this).parent('li').addClass('active');
@@ -845,11 +860,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				});
 
+				/* Bind button spinner - may move */
+			
+				
 				/* Adds Trigger Argument Filters to Trigger Conditions */
 				jQuery('body').on( 'click' , '.add-trigger-filter' , function() {
-					
+					var ladda = Ladda.create(document.querySelector( '#add-trigger-filter-button' ));
+					ladda.toggle();
 					var filter_id = jQuery(this).attr('id');
-
+					
 					var target_container = 'argument-filters-container';
 					var filter_input_filter_id_name = 'trigger_argument_id';
 					var filter_input_key_name = 'trigger_filter_key';
@@ -884,6 +903,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							'defaults' : null
 						},
 						success: function(html) {
+							/* Disable ladda button spinner */
+							ladda.toggle();
+							
 							/* Reveal Trigger Evaluation Options */
 							jQuery('.trigger-filter-evaluate').removeClass('nav-hide');
 							jQuery('#'+target_container).append(html);
@@ -894,6 +916,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				/* Adds Action DB Lookup Filters to Action Conditions */
 				jQuery('body').on( 'click' , '.add-action-filter' , function() {
+					
+					/* Add spinner to button */
+					var ladda = Ladda.create(document.querySelector( '.add-action-filter' ));
+					ladda.toggle();
 					
 					var dropdown_id = jQuery(this).attr('data-dropdown-id');
 					var filter_id = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
@@ -943,11 +969,14 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 								axis: "y",
 								handle: "h4",
 								stop: function( event, ui ) {
-								  ui.item.children( "h3" ).triggerHandler( "focusout" );
-								  jQuery( this ).accordion( "refresh" );
+									ui.item.children( "h3" ).triggerHandler( "focusout" );
+									jQuery( this ).accordion( "refresh" );
 								}
 							});
 							jQuery('.action-block-filters-container').accordion('refresh');
+							
+							/* Stop spinner */
+							ladda.toggle();
 						}
 					});
 
@@ -955,7 +984,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				/* Adds Actions to Action Contaner*/
 				jQuery('body').on( 'click' , '.add-action' , function() {
-
+					
+					/* Create spinning affect */
+					var ladda = Ladda.create( this );
+					ladda.toggle();
+					
 					var dropdown_id = jQuery(this).attr('data-dropdown-id');
 					var action_name = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
 					var dropdown_id = jQuery(this).attr('data-action-type');
@@ -991,6 +1024,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							'defaults' : null
 						},
 						success: function(html) {
+							/* Disable Spinner */
+							ladda.toggle();
+							
 							/* Reveal Trigger Evaluation Options */
 							jQuery('#'+target_container).append(html);
 							var index = 0;
@@ -1004,8 +1040,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 								axis: "y",
 								handle: "h4",
 								stop: function( event, ui ) {
-								  ui.item.children( "h4" ).triggerHandler( "focusout" );
-								  jQuery( this ).accordion( "refresh" );
+									ui.item.children( "h4" ).triggerHandler( "focusout" );
+									jQuery( this ).accordion( "refresh" );
 								}
 							});
 							jQuery(".action-block-actions-container").accordion("refresh");
@@ -1030,9 +1066,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				jQuery('body').on( 'click' , '.delete-action' , function() {
 					if(confirm('Are sure want to delete this sub-action?')){
 						var del_id = jQuery(this).attr('id');
-						del_id = del_id.replace('delete-sublock-','');
+						del_id = del_id.replace('delete-subblock-','');
 						jQuery(this).parent().parent().parent().parent().parent().parent().remove();
-						jQuery('h4#header-sublock-' + del_id).remove();
+						jQuery('h4#header-subblock-' + del_id).remove();
 					} else {	
 						return false;
 					}
@@ -1043,8 +1079,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					if(confirm('Are sure want to delete this action block?')){
 						var del_id = jQuery(this).attr('id');
 						del_id = del_id.replace('delete-action-block-','');
-						jQuery(this).parent().parent().remove();
-						jQuery('h3#header-block-' + del_id).remove();
+						jQuery('#action-block-' + del_id).remove();
+						//jQuery('h3#header-block-' + del_id).remove();
 					} else {	
 						return false;
 					}
@@ -1063,7 +1099,11 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 
 				/* Adds Action Block*/
 				jQuery('body').on( 'click' , '.add-action-block' , function() {
-
+					
+					/* Add spinner to button */
+					var ladda = Ladda.create(document.querySelector( '#add-actions-button' ));
+					ladda.toggle();
+					
 					var action_block_type = this.id;
 					var action_block_id = jQuery("body").find('.action-block:last').attr('data-action-block-id');
 
@@ -1086,6 +1126,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							'action_block_id' : action_block_id
 						},
 						success: function(html) {
+							/* Disable spinner */
+							ladda.toggle();
+							
 							jQuery('.actions-container').append(html);
 							var index = 0;
 							index = jQuery(".actions-container h3").length - 1; 
@@ -1098,8 +1141,8 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 								axis: "y",
 								handle: "h3",
 								stop: function( event, ui ) {
-								  ui.item.children( "h3" ).triggerHandler( "focusout" );
-								  jQuery( this ).accordion( "refresh" );
+									ui.item.children( "h3" ).triggerHandler( "focusout" );
+									jQuery( this ).accordion( "refresh" );
 								}
 							}); 
 							jQuery('.actions-container').accordion('refresh');
@@ -1144,22 +1187,23 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html = '';
 			switch ($action_block_type) {
 				case 'actions' :
-					$html .= "<div class='action-wrapper'><h3 id='header-block-".$action_block_id."'>Actions Block</h3>";
-					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."'>";
-					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
-					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
-					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
-					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
-					$html .= "	";				
-					$html .= "		<fieldset id='action-block-if-then' class='action-block-actions'>";
-					$html .= "			<legend>Actions:</legend>";
-					$html .= "				<select class='action-select-dropdown select2' id='action-select-dropdown-".$action_block_id."' >";
-					$html .= "					<option value='-1' class=''>Select Action</option>";
-					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
-					$html .= "					Add Action";
-					$html .= "				</span>";
-					$html .= "				<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
+					$html .= "<div class='action-wrapper' id='action-block-". $action_block_id ."'>";
+					$html .= "	<h3 id='header-block-".$action_block_id."'>Actions Block";
+					$html .= "		<div class='action-block-delete'><button class='btn btn-default btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><i class='fa fa-times'></i></button></div>";
+					$html .= "	</h3>";
+					$html .= "	<div class='action-block' data-action-block-id='".$action_block_id."'>";
+					$html .= "		<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
+					$html .= "			<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
+					$html .= "			<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";				
+					$html .= "			<fieldset id='action-block-if-then' class='action-block-actions'>";
+					$html .= "				<legend>Actions:</legend>";
+					$html .= "					<select class='action-select-dropdown select2' id='action-select-dropdown-".$action_block_id."' >";
+					$html .= "						<option value='-1' class=''>Select Action</option>";
+					$html .= "					</select>";
+					$html .= "					<span class='button add-action ladda-button'  id='add-action'  data-style='expand-right' data-spinner-color='#000000' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "						Add Action";
+					$html .= "					</span>";
+					$html .= "					<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
 					
 					/* Prepare Actions if Action Block Manually Evoked */
 					if ( isset( $block['actions']['then'] ) ) {
@@ -1181,35 +1225,38 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						}
 					}
 					
-					$html .= "				</div>";
+					$html .= "					</div>";
+					$html .= "			</fieldset>";
 					$html .= "		</fieldset>";
-					$html .= "</fieldset>";
-					$html .= "</div></div>";
-					//$html .= "<hr class='action-block-separator'>";
+					$html .= "	</div>";
+					$html .= "</div>";
 					break;
 					
 				case 'if-then' :
-					$html .= "<div class='action-wrapper action-wrapper-if-then'><h3 id='header-block-".$action_block_id."'>IF/Then Action Block</h3>";
-					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
-					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
-					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
-					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
-					$html .= "	";				
-					$html .= "		<fieldset id='action-block-if-then-conditions' class='action-block-conditions'>";
-					$html .= "			<legend>Conditions:</legend>";
-					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
-					$html .= "					<option value='-1' class=''>Select Filter</option>";
-					$html .= "				</select>";
-					$html .= "				<span class='button add-action-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'	data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
-					$html .= "					Add Lookup";
-					$html .= "				</span>";
-					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
-					$html .= "					<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-all' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] || !isset($block['action_block_filters_evaluate']) == 'match-all' ? 'checked="checked"' : '' ) ."> Match All</span>";
-					$html .= "					<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-any' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] == 'match-any' ? 'checked="checked"' : '' ) ."> Match Any</span>";
-					$html .= "					<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-none' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] == 'match-none' ? 'checked="checked"' : '' ) ."> Match None</span>";
-					$html .= "				</div>";
-					$html .= "				<div class='action-block-filters-container' id='action-block-filters-container-".$action_block_id."' >";
+					$html .= "<div class='action-wrapper action-wrapper-if-then' id='action-block-". $action_block_id ."'>";
+					$html .= "	<h3 id='header-block-".$action_block_id."'>";
+					$html .=		 __( 'IF/Then Action Block' , 'marketing-automation' ); 
+					$html .= "		<div class='action-block-delete'><button class='btn btn-default btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><i class='fa fa-times'></i></button></div>";
+					$html .= "	</h3>";
+					$html .= "	<div class='action-block' data-action-block-id='".$action_block_id."' >";
+					$html .= "		<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
+					$html .= "			<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
+					$html .= "			<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
+			
+					$html .= "			<fieldset id='action-block-if-then-conditions' class='action-block-conditions'>";
+					$html .= "				<legend>Conditions:</legend>";
+					$html .= "					<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
+					$html .= "						<option value='-1' class=''>Select Filter</option>";
+					$html .= "					</select>";
+					$html .= "					<span class='button add-action-filter ladda-button' id='add_filter' data-style='expand-right'  data-spinner-color='#000000' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'	data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "						Add Lookup";
+					$html .= "					</span>";
+					$html .= "					<div class='action-block-filter-evaluate' style='display:inline;'>";
+					$html .= "						<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-all' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] || !isset($block['action_block_filters_evaluate']) == 'match-all' ? 'checked="checked"' : '' ) ."> Match All</span>";
+					$html .= "						<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-any' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] == 'match-any' ? 'checked="checked"' : '' ) ."> Match Any</span>";
+					$html .= "						<span class='label-evaluate'><input type='radio' name='action_block_filters_evaluate[".$action_block_id."]' value='match-none' ". ( isset($block['action_block_filters_evaluate']) && $block['action_block_filters_evaluate'] == 'match-none' ? 'checked="checked"' : '' ) ."> Match None</span>";
+					$html .= "					</div>";
+					$html .= "					<div class='action-block-filters-container' id='action-block-filters-container-".$action_block_id."' >";
 
 					/* Prepare Filters if Action Block Manually Evoked */
 					if ( isset( $block['filters'] ) ) {
@@ -1233,17 +1280,17 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						}
 					}
 
-					$html .= "				</div>";
-					$html .= "		</fieldset>";
-					$html .= "		<fieldset id='action-block-if-then' class='action-block-actions'>";
-					$html .= "			<legend>Actions:</legend>";
-					$html .= "				<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
-					$html .= "					<option value='-1' class=''>Select Action</option>";
-					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
-					$html .= "					Add Action";
-					$html .= "				</span>";
-					$html .= "				<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
+					$html .= "					</div>";
+					$html .= "			</fieldset>";
+					$html .= "			<fieldset id='action-block-if-then' class='action-block-actions'>";
+					$html .= "				<legend>Actions:</legend>";
+					$html .= "					<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
+					$html .= "						<option value='-1' class=''>Select Action</option>";
+					$html .= "					</select>";
+					$html .= "					<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "						Add Action";
+					$html .= "					</span>";
+					$html .= "					<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
 					
 					/* Prepare Actions if Action Block Manually Evoked */
 					if ( isset( $block['actions']['then'] ) ) {
@@ -1266,17 +1313,20 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						}
 					}
 					
-					$html .= "				</div>";
+					$html .= "					</div>";
+					$html .= "			</fieldset>";
 					$html .= "		</fieldset>";
-					$html .= "</fieldset>";
-					$html .= "</div></div>";
-					//$html .= "<hr class='action-block-separator'>";
+					$html .= "	</div>";
+					$html .= "</div>";
+					
 					break;
 					
 				case 'if-then-else' :
-					$html .= "<div class='action-wrapper action-wrapper-if-then-else'><h3 id='header-block-".$action_block_id."'>IF/Then/Else Action Block</h3>";	
-					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
+					$html .= "<div class='action-wrapper action-wrapper-if-then-else' id='action-block-". $action_block_id ."'><h3 id='header-block-".$action_block_id."'>";
+					$html .= __( 'IF/Then/Else Action Block' , 'marketing-automation' );
+					$html .= "<div class='action-block-delete'><button class='btn btn-default btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><i class='fa fa-times'></i></button></div>";
+					$html .= "</h3>";	
+					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";				
 					$html .= "<fieldset id='action-block-if-then' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
@@ -1285,7 +1335,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='action-filter-select-dropdown' id='action-filter-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Filter</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-action-filter' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'	data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
+					$html .= "				<span class='button add-action-filter ladda-button' data-spinner-color='#000000' data-style='epand-right' id='add_filter' data-dropdown-id='action-filter-select-dropdown-".$action_block_id."' data-filter-container='action-block-filters-container-".$action_block_id."'	data-filter-input-filter-id='action_filter_id[".$action_block_id."]' data-filter-input-key-name='action_filter_key[".$action_block_id."]' data-filter-input-compare-name='action_filter_compare[".$action_block_id."]' data-filter-input-value-name='action_filter_value[".$action_block_id."]'>";
 					$html .= "					Add Lookup";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-filter-evaluate' style='display:inline;'>";
@@ -1391,9 +1441,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					
 					
 				case 'while':
-					$html .= "<div class='action-wrapper  action-wrapper-while'><h3 id='header-block-".$action_block_id."'>While Action Block</h3>";	
+					$html .= "<div class='action-wrapper action-wrapper-while' id='action-block-". $action_block_id ."'><h3 id='header-block-".$action_block_id."'>While Action Block</h3>";	
 					$html .= "<div class='action-block' data-action-block-id='".$action_block_id."' >";
-					$html .= "<div class='action-block-delete'><button class='btn btn-inverse btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><span class='glyphicon glyphicon-remove-sign'></span></button></div>";
+					$html .= "<div class='action-block-delete'><button class='btn btn-default btn-small delete-action-block' title='Delete Action Block' id='delete-action-block-".$action_block_id."'><i class='fa fa-times'></i></button></div>";
 					$html .= "<fieldset id='action-block-while' class='action-block-fieldset' data-action-block-priority='".$action_priority."'>";
 					$html .= "	<input type='hidden' name='action_block_id[".$action_block_id."]' value='".$action_block_id."'>";
 					$html .= "	<input type='hidden' name='action_block_type[".$action_block_id."]' value='".$action_block_type."'>";
@@ -1643,7 +1693,10 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$header_name = ucfirst(strtolower($header_name)); 	
 
 			$html = "<div class='filter-container'>";
-			$html .= "<h4 id='header-filter-".$args['action_block_id']."-".$args['child_id']."' class='filter-header'>".$header_name."</h4>";
+			$html .= "<h4 id='header-filter-".$args['action_block_id']."-".$args['child_id']."' class='filter-header'>";
+			$html .= 	$header_name;
+			$html .= "	<div class='action-filter-delete'><button class='btn btn-default btn-small delete-filter' title='Delete Action Filter' id='delete-filter-".$args['action_block_id']."-".$args['child_id']."'><i class='fa fa-times'></i></button></div>";
+			$html .= "</h4>";
 			$html .= "<div><table class='table-filter' data-child-id='".$args['child_id']."'>";
 			$html .= "	<tr class='tr-filter'>";
 			$html .= "		<td class='td-filter-key'>";
@@ -1655,9 +1708,6 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$html .= "		</td>";
 			$html .= "		<td class='td-filter-value'>";
 			$html .= 			$value_input;
-			$html .= "		</td>";
-			$html .= "		<td class='td-filter-delete'>";
-			$html .= "			<button class='btn btn-danger btn-small delete-filter' title='Delete Action Filter' id='delete-filter-".$args['action_block_id']."-".$args['child_id']."'><span class='glyphicon glyphicon-remove-sign'></span></button>";
 			$html .= "		</td>";
 			$html .= "	</tr>";
 			$html .= "</table>";
@@ -1701,13 +1751,17 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			$header_name = str_replace('_', ' ', $this_action);
 			$header_name = ucfirst(strtolower($header_name)); 	
 
-			$html = "<div class='action-sub-wrapper'><h4 id='header-sublock-".$args['action_block_id']."-".$args['child_id']."'>".$header_name."</h4><div class='action-container'>";
+			$html = "<div class='action-sub-wrapper'>";
+			$html .= "<h4 id='header-subblock-".$args['action_block_id']."-".$args['child_id']."'>";
+			$html .=  	$header_name;
+			$html .= "<div class='action-delete'><button class='btn btn-default btn-small delete-action' title='Delete Action Block' id='delete-subblock-".$args["action_block_id"]."-".$args['child_id']."'><i class='fa fa-times'></i></button></div>";
+			$html .= "</h4>";
+			$html .= "<div class='action-container'>";
 			$html .= "<table class='table-action' data-child-id='".$args['child_id']."'>";
 			$html .= "	<tr class='tr-action'>";
 			$html .= "		<td class='td-action-setting-label' colspan=2>";
 			$html .= "			";
 			$html .= "			<input type='hidden' name='".$args['input_action_name_name']. ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) . ( isset($args['action_type'] ) && $args['action_block_id'] ? '['.$args['action_type'].']' : '' ) . "[".$args['child_id']."]' value='".$this_action."'>";
-			$html .= "			<div class='action-delete'><img src='".INBOUND_MARKETING_AUTOMATION_URLPATH."images/close.png' class='delete-action delete-img' id='delete-sublock-".$args['action_block_id']."-".$args['child_id']."'></div>";
 			$html .= "		</td>";
 			$html .= "	</tr>";
 
@@ -1849,19 +1903,19 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					break;
 				case 'checkbox':
 					//print_r($args);exit;
-						$html .=  "<table >";
+						$html .=	"<table >";
 						
 						foreach ($args['options'] as $id=>$label) {
 								$html .= '<tr>';
 								$html .= '<td data-field-type="checkbox">';
-								$html .=  '<input type="checkbox"  name="'.$args['name'] . ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) .( isset($args['action_type'] ) && $args['action_type'] ? '['.$args['action_type'].']' : '' ) . '['.$args['child_id'].'][]" class="'.$args['class'].'" value="'.$id.'" '. ( isset($args['default'][$args['name']]) && in_array( $id , $args['default'][$args['name']] ) ? 'checked="checked"' : '' ) .'>';
-								$html .=  '<label for="'.$id.'">&nbsp;&nbsp;'.$label.'</label>';
-								$html .=  '</td>';
-								$html .=  "</tr>";			
+								$html .=	'<input type="checkbox"	name="'.$args['name'] . ( isset($args['action_block_id'] ) && $args['action_block_id'] ? '['.$args['action_block_id'].']' : '' ) .( isset($args['action_type'] ) && $args['action_type'] ? '['.$args['action_type'].']' : '' ) . '['.$args['child_id'].'][]" class="'.$args['class'].'" value="'.$id.'" '. ( isset($args['default'][$args['name']]) && in_array( $id , $args['default'][$args['name']] ) ? 'checked="checked"' : '' ) .'>';
+								$html .=	'<label for="'.$id.'">&nbsp;&nbsp;'.$label.'</label>';
+								$html .=	'</td>';
+								$html .=	"</tr>";			
 						}
 						
-						$html .=  "</table>";
-					//$html .=  '<div class="lp_tooltip tool_checkbox" title="'.$field['description'].'"></div>';
+						$html .=	"</table>";
+					//$html .=	'<div class="lp_tooltip tool_checkbox" title="'.$field['description'].'"></div>';
 					break;
 			}
 
