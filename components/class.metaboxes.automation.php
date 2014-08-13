@@ -1287,7 +1287,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "					<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
 					$html .= "						<option value='-1' class=''>Select Action</option>";
 					$html .= "					</select>";
-					$html .= "					<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "					<span class='button add-action ladda-button'  id='add-action'  data-style='expand-right' data-spinner-color='#000000' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."'	data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "						Add Action";
 					$html .= "					</span>";
 					$html .= "					<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
@@ -1374,7 +1374,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='action-select-dropdown' id='action-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Action</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."' data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "				<span class='button add-action ladda-button'  id='add-action'  data-style='expand-right' data-spinner-color='#000000'  data-dropdown-id='action-select-dropdown-".$action_block_id."' data-action-container='action-block-actions-container-".$action_block_id."' data-action-type='then' data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "					Add Action";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-actions-container' id='action-block-actions-container-".$action_block_id."' >";
@@ -1406,7 +1406,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 					$html .= "				<select class='action-select-dropdown' id='else-action-select-dropdown-".$action_block_id."' >";
 					$html .= "					<option value='-1' class=''>Select Action</option>";
 					$html .= "				</select>";
-					$html .= "				<span class='button add-action' id='add-action' data-dropdown-id='else-action-select-dropdown-".$action_block_id."' data-action-container='action-block-else-actions-container-".$action_block_id."'	data-action-type='else'	data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
+					$html .= "				<span class='button add-action ladda-button'  id='add-action'  data-style='expand-right' data-spinner-color='#000000'  data-dropdown-id='else-action-select-dropdown-".$action_block_id."' data-action-container='action-block-else-actions-container-".$action_block_id."'	data-action-type='else'	data-input-action-type-name='action_name' data-action-block-id='".$action_block_id."'>";
 					$html .= "					Add Action";
 					$html .= "				</span>";
 					$html .= "				<div class='action-block-else-actions-container action-block-actions-container' id='action-block-else-actions-container-".$action_block_id."' >";
