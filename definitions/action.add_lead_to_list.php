@@ -18,6 +18,10 @@ if ( !class_exists( 'Inbound_Automation_Action_Add_Lead_To_List' ) ) {
 		public static function define_action( $actions ) {
 			global $Inbound_Leads;
 			
+			if (!isset($Inbound_Leads)) {
+				return;
+			}
+			
 			/* Build Action */
 			$actions['add_lead_to_list'] = array (
 				'class_name' => get_class(),

@@ -19,8 +19,11 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 		public static function define_action( $actions ) {
 
 			
+			/* Get Lead Lists */
+			$lead_lists = Inbound_Leads::get_lead_lists_as_array();
+			
 			/* Get Available Email Templates */
-			$email_templates = self::get_email_templates();
+			$emails = Inbound_Mailer_Post_Type::get_automation_emails_as( 'ARRAY' );
 
 			/* Build Action */
 			$actions['send_email'] = array (
@@ -30,76 +33,103 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 				'description' => 'Send an email using available filter data.',
 				'settings' => array (
 					array (
-						'id' => 'to_address',
-						'label' => 'To Address:',
-						'type' => 'text',
-						'default' => '{{lead-email-address}}'
-						),
-					array (
-						'id' => 'from_address',
-						'label' => 'From Address:',
-						'type' => 'text',
-						'default' => '{{admin-email-address}}'
-						),
-					array (
-						'id' => 'from_name',
-						'label' => 'From Name:',
-						'type' => 'text',
-						'default' => '{{site-name}}'
-						),
-					array (
-						'id' => 'email_template',
-						'label' => 'Select Template',
+						'id' => 'send_to',
+						'label' => __( 'Send Email To' , 'inbound-pro' ),
 						'type' => 'dropdown',
-						'options' => $email_templates
+						'options' => array(
+							'lead' => __( 'Lead' , 'inbound-pro' ),
+							'custom' => __( 'Custom Email Address' , 'inbound-pro' ),
+							'lead_list' => __( 'Lead List' , 'inbound-pro' ),
 						)
+					),
+					array (
+						'id' => 'custom_email',
+						'label' => __( 'Enter Email Address' , 'inbound-pro' ),
+						'type' => 'text',
+						'hidden' => true,
+						'reveal' => array(
+							'selector' => 'send_to',
+							'value' => 'custom'
+						)
+					),
+					array (
+						'id' => 'lead_lists',
+						'label' => __( 'Select Lead List' , 'inbound-pro' ),
+						'type' => 'select2',
+						'hidden' => true,
+						'reveal' => array(
+							'selector' => 'send_to',
+							'value' => 'lead_list'
+						), 
+						'options' => $lead_lists
+					),
+					array (
+						'id' => 'email_id',
+						'label' => __( 'Select Email' , 'inbound-pro' ),
+						'type' => 'dropdown',
+						'options' => $emails
+					)
 				)
 			);
 
 			return $actions;
 		}
 
-		public static function get_email_templates() {
-			
 		
-			$templates = get_posts(array(
-									'post_type' => 'email-template',
-									'posts_per_page' => -1
-								));
-										
-			
-			foreach ( $templates as $template ) {
-				$email_templates[$template->ID] = $template->post_title;
-			}
-			
-			$email_templates = ( isset($email_templates) ) ? $email_templates : array();
-			
-			return $email_templates;
-
-		}
-		
-		/*
-		* Sends the Email 
+		/**
+		* Runs the send email processing action
+		* @param ARRAY $action saved action settings
+		* @param ARRAY $filters action filters
 		*/
-		public static function run_action( $action , $arguments ) {
+		public static function run_action( $action , $filters ) {
 			
+			error_log( $filters );
 			$Inbound_Templating_Engine = Inbound_Templating_Engine();
 			
-			$template = get_post( $action['email_template'] );
-			$subject = get_post_meta( $template->ID , 'inbound_email_subject_template' , true );
-			$body = get_post_meta( $template->ID , 'inbound_email_body_template' , true );
 			
-			$to_address = $Inbound_Templating_Engine->replace_tokens( $action['to_address'] , $arguments );
-			$from_address = $Inbound_Templating_Engine->replace_tokens( $action['from_address'] , $arguments  );
-			$from_name = $Inbound_Templating_Engine->replace_tokens( $action['from_name'] , $arguments  );
-			$subject = $Inbound_Templating_Engine->replace_tokens( $subject , $arguments  );
-			$body = $Inbound_Templating_Engine->replace_tokens( $body , $arguments  );
+			switch ($action['send_to']) {
+				
+				case 'lead':
+					/* Load sender class */
+					$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();
+					
+					/* get lead id */
+					
+					/* get variant marker */
+					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );
+					
+					/* send email */
+					$Inbound_Mail_Daemon->send_email_by_lead_id( array(
+						'lead_id' => $lead_id,
+						'email_id' => $action['email_id'],
+						'tags' => array( 'automated' )
+					)); 
+					BREAK;
+				case 'custom':
+					/* get variant marker */
+					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );
+					
+					/* send email */
+					$Inbound_Mail_Daemon->send_test_email( array(
+						'lead_id' => $lead_id,
+						'email_id' => $action['email_id'],
+						'vid' => $vid,
+						'tag' => 'automated'
+					));
+					BREAK;
+				case 'lead_list':
+					$Inbound_Mailer_Scheduling = new Inbound_Mailer_Scheduling;
+					$Inbound_Mailer_Scheduling->recipients = $action['lead_lists'];
+					$Inbound_Mailer_Scheduling->schedule_email( $action['email_id'] );
+					
+					BREAK;
+				
 			
-			$headers = 'From: '. $from_name .' <'. $from_email .'>' . "\r\n";
-			$result = wp_mail( $to_address , $subject, $body , $headers );
+			}
+			
 			
 			$action_encoded = json_encode($action) ;
-			inbound_record_log(  'Action Event - Send Email' , '<h2>To Address</h2>' . $to_address . '<h2>From Address</h2>' . $from_address .'<h2>From Name</h2>' . $from_name .'<h2>Subject</h2>' . $subject .'<h2>Body</h2><pre>' . $body .'</pre><h2>Settings</h2><pre>'. $action_encoded.'</pre> <h2>Arguments</h2><pre>' . json_encode($arguments , JSON_PRETTY_PRINT ) . '</pre>', $action['rule_id'] , 'action_event' );
+			inbound_record_log(  'Action Event - Send Email' , print_r($action,true).print_r($filter,true) );
 			
 		}
 
