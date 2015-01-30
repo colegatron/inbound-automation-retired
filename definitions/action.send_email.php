@@ -11,7 +11,7 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 	class Inbound_Automation_Action_Send_Email {
 
 		function __construct() {
-
+			
 			add_filter( 'inbound_automation_actions' , array( __CLASS__ , 'define_action' ) , 1 , 1);
 		}
 
@@ -23,8 +23,12 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 			$lead_lists = Inbound_Leads::get_lead_lists_as_array();
 			
 			/* Get Available Email Templates */
-			$emails = Inbound_Mailer_Post_Type::get_automation_emails_as( 'ARRAY' );
-
+			if ( class_exists('Inbound_Mailer_Post_Type') ) {
+				$emails = Inbound_Mailer_Post_Type::get_automation_emails_as( 'ARRAY' );
+			} else {
+				$emails = array('email component not installed.');
+			}
+			
 			/* Build Action */
 			$actions['send_email'] = array (
 				'class_name' => get_class(),
@@ -79,11 +83,12 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 		/**
 		* Runs the send email processing action
 		* @param ARRAY $action saved action settings
-		* @param ARRAY $filters action filters
+		* @param ARRAY $trigger_data action filters
 		*/
-		public static function run_action( $action , $filters ) {
+		public static function run_action( $action , $trigger_data ) {
 			
-			error_log( $filters );
+			//error_log( print_r( $action , true ) );
+			//error_log( print_r( $trigger_data , true ) ); 
 			$Inbound_Templating_Engine = Inbound_Templating_Engine();
 			
 			
@@ -91,30 +96,47 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 				
 				case 'lead':
 					/* Load sender class */
-					$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();
-					
+					$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();					
+				
 					/* get lead id */
+					$params = array(	
+						'email' => $trigger_data[0]['email'],
+						'return' => 'ID',
+						'results_per_page' => -1,
+						'fields' => 'ids'
+					);
+
+					$results = Inbound_API::leads_get( $params );
+					
+					
+					if (!$results) {
+						return;
+					}
+
 					
 					/* get variant marker */
 					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );
 					
 					/* send email */
-					$Inbound_Mail_Daemon->send_email_by_lead_id( array(
-						'lead_id' => $lead_id,
+					$respone = $Inbound_Mail_Daemon->send_solo_email( array(
+						'email_address' => $leads[0],
+						'lead_id' => $leads[0],
 						'email_id' => $action['email_id'],
 						'tags' => array( 'automated' )
 					)); 
+					
+					
 					BREAK;
 				case 'custom':
 					/* get variant marker */
 					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );
 					
 					/* send email */
-					$Inbound_Mail_Daemon->send_test_email( array(
-						'lead_id' => $lead_id,
+					$respone = $Inbound_Mail_Daemon->send_solo_email( array(
+						'email_address' => $action['custom_email'],
 						'email_id' => $action['email_id'],
 						'vid' => $vid,
-						'tag' => 'automated'
+						'tags' => 'automated'
 					));
 					BREAK;
 				case 'lead_list':
@@ -129,7 +151,11 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 			
 			
 			$action_encoded = json_encode($action) ;
-			inbound_record_log(  'Action Event - Send Email' , print_r($action,true).print_r($filter,true) );
+			inbound_record_log(  
+				'Action Event - Send Email' ,  
+				'<h2>'.__('Mandrill Response', 'inbound-pro') .'</h2><pre>'.print_r($respone,true).'</pre>' .
+				'<h2>'.__('Action Settings' , 'inbound-pro') .'</h2><pre>'. print_r($action,true).print_r($filter,true) .'</pre>'
+			);
 			
 		}
 

@@ -13,7 +13,7 @@ class Inbound_Logging_Automation {
 	static $log_limit;
 
 	public function __construct() {
-		self::$log_limit = apply_filters('inbound_automation_log_limit' , 1000 );
+		self::$log_limit = apply_filters('inbound_automation_log_limit' , 500 );
 		self::load_hooks();
 	}
 

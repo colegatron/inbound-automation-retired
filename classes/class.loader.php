@@ -24,7 +24,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 		*  Initialize singleton class
 		*/
 		public static function init() {
-			
+
 			/* return class instance if alredy defined */
 			if ( isset(self::$instance) ) {
 				return self::$instance;
@@ -76,6 +76,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 		*/
 		public static function load_rule( $rule_id ) {
 			self::$rule = get_post_meta( $rule_id , 'inbound_rule' , true );
+			self::$rule['ID'] = $rule_id;
 		}
 
 		/**
@@ -225,7 +226,6 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 		
 		/* Adds Listener Hooks for Building Filters and Rule Processings */
 		public static function add_trigger_listeners() {
-
 			foreach (self::$instance->triggers as $hook_name => $trigger) {
 				if ( isset($trigger['action_hook']) ) {
 					add_action( $trigger['action_hook'] , array( __CLASS__ , 'generate_arguments' ) , 10 , count($trigger['arguments']) ) ;
@@ -244,6 +244,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 			foreach (self::$instance->rules  as $rule) {
 
 				self::load_rule( $rule->ID );
+				$rule->settings = self::$rule;
 				
 				if ( !isset( self::$rule['trigger']) ) {
 					continue;
@@ -277,7 +278,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 						/* Log Evaluation Message */
 						self::record_schedule_event( $rule , $arguments , $trigger , $evaluate );
 					
-						Inbound_Automation_Processing::add_job_to_queue( $rule , $arguments );
+						Inbound_Automation_Processing::add_job_to_queue( self::$rule , $arguments );
 					}
 				}
 			}
@@ -403,7 +404,6 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 		*/
 		public static function record_trigger_event( $rule , $arguments , $trigger , $evaluate , $evals , $eval_nature ) {
 
-			
 			$evaluate = (!$evaluate) ? __( 'Blocked' , 'ma' ) : __( 'Passed' , 'ma' );
 
 			$message = "<h2>".__( 'Trigger' , 'inbound-pro' ). "</h2>";
@@ -413,7 +413,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 			$message .= "<h2>". __('Evaluation Condition:' , 'inbound-pro' ) . "</h2><br><pre>" . $eval_nature . "</pre></p>";
 			$message .= "<p>". __('Evaluation Details:' , 'inbound-pro' ). "<br><pre>" . print_r( $evals , true ) . "</pre></p>";
 			$message .= "<p><h2>". __('Rule Settings:' , 'inbound-pro' ) ."</h2> <br> <pre>". print_r( $rule , true ) . "</pre></p>";
-			$message .= "<p><h2>". __('Argument Data:' , 'inbound-pro' ) ."</h2> <br> <pre>". print_r( $arguments , true) . '</pre></p>';
+			$message .= "<p><h2>". __('Trigger Data:' , 'inbound-pro' ) ."</h2> <br> <pre>". print_r( $arguments , true) . '</pre></p>';
 
 
 			inbound_record_log( 'Trigger Event' , $message , $rule->ID , 'trigger_event' );
@@ -421,15 +421,16 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 
 		/*
 		* Record Schedule Event in Logs
+		* @param OBJECT $rule contains information about rule being ran
+		* @param ARRAY $arguments contains trigger(hook) argument data 
 		*/
 		public static function record_schedule_event( $rule , $arguments ) {
 
 			$message = "<p><h2>". __('Rule Settings:' , 'inbound-pro' )."</h2> <br> <pre>". print_r( $rule , true ) . '</pre></p>';
-			$message .= "<p><h2>". __('Argument Data:' , 'inbound-pro' )."</h2> <br> <pre>". print_r( $arguments , true ) . '</pre></p>';
+			$message .= "<p><h2>". __('Trigger Data:' , 'inbound-pro' )."</h2> <br> <pre>". print_r( $arguments , true ) . '</pre></p>';
 
 
-			inbound_record_log( 'Schedule Event' , $message , $rule->ID , 'schedule_event' );
-
+			inbound_record_log( __( 'Schedule Event' , 'inbound-pro' ) , $message , $rule->ID , 'schedule_event' );
 		}
 
 		/**
@@ -472,7 +473,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 		*/
 		public static function update_arguments() {
 			if (self::$instance->inbound_arguments) {
-				 update_option( 'inbound_automation_arguments' , self::$instance->inbound_arguments );
+				update_option( 'inbound_automation_arguments' , self::$instance->inbound_arguments );
 			} 
 		}
 

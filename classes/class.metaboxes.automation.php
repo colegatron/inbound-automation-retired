@@ -264,9 +264,9 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 							Add Actions <span class="caret"></span>
 						</a>
 						<ul class="dropdown-menu" role="menu">
-							<li><a	id="actions" class="add-action-block">If Actions</a></li>
-							<li><a	id="if-then" class="add-action-block">If/Then Actions</a></li>
-							<li><a	id="if-then-else" class="add-action-block">If/Then/Else Actions</a></li>
+							<li><a	id="actions" class="add-action-block"><?php _e( 'Actions' , 'inbound-pro' ); ?></a></li>
+							<li><a	id="if-then" class="add-action-block"><?php _e( 'If/Then Actions' , 'inbound-pro' ); ?></a></li>
+							<li><a	id="if-then-else" class="add-action-block"><?php _e( 'If/Then/Else Actions' , 'inbound-pro' ); ?></a></li>
 						</ul>
 					</div>
 				</div>

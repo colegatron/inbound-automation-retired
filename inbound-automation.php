@@ -126,6 +126,7 @@ if (!class_exists('Inbound_Automation_Plugin')) {
 					/* load front-end files */
 					include_once('classes/class.post-type.automation.php');
 					include_once('classes/class.automation.php');
+					include_once('classes/class.logs.php');
 					include_once('classes/class.loader.php');
 					include_once('classes/class.metaboxes.automation.php');
 					include_once('classes/class.automation.php');
