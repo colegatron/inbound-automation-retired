@@ -4,7 +4,7 @@ var InboundRulesJs = ( function() {
 	var ladda_trigger_filters; /* placeholder for ladda button */
 	var ladda_add_action_block; /* placeholder for ladda button */
 	var ladda_add_actions; /* placeholder for ladda button */
-	var ladd_add_action_filters; /* placeholder for ladda button */
+	var ladda_add_action_filters; /* placeholder for ladda button */
 	var current_element; /* placeholder for current element being processed */
 	var target_container; /* placeholder for html placements */
 	
@@ -116,7 +116,9 @@ var InboundRulesJs = ( function() {
 			
 			/* Adds Trigger Argument Filters to Trigger Conditions */
 			jQuery('body').on( 'click' , '.add-trigger-filter' , function() {/* add spinner to button */
-				InboundRulesJs.ladda_trigger_filters = Ladda.create(document.querySelector( '#add-trigger-filter-button' ));
+				if ( typeof InboundRulesJs.ladda_trigger_filters == 'undefined' ) {
+					InboundRulesJs.ladda_trigger_filters = Ladda.create(document.querySelector( '#add-trigger-filter-button' ));
+				}
 				InboundRulesJs.ladda_trigger_filters.toggle();
 				
 				var filter_id = jQuery(this).attr('id');
@@ -158,7 +160,9 @@ var InboundRulesJs = ( function() {
 			/* Adds Action Block*/
 			jQuery('body').on( 'click' , '.add-action-block' , function() {
 				/* Add spinner to button */
-				InboundRulesJs.ladda_add_action_block = Ladda.create(document.querySelector( '#add-action-block-button' ));			
+				if ( typeof InboundRulesJs.ladda_add_action_block == 'undefined' ) {
+					InboundRulesJs.ladda_add_action_block = Ladda.create(document.querySelector( '#add-action-block-button' ));			
+				}
 				InboundRulesJs.ladda_add_action_block.toggle();
 				
 				var action_block_type = this.id;
@@ -190,7 +194,9 @@ var InboundRulesJs = ( function() {
 			jQuery('body').on( 'click' , '.add-action' , function() {
 				
 				/* Create spinning affect */
-				InboundRulesJs.ladda_add_actions =  Ladda.create( this );				
+				if ( typeof InboundRulesJs.ladda_add_action == 'undefined' ) {
+					InboundRulesJs.ladda_add_actions =  Ladda.create( this );
+				}
 				InboundRulesJs.ladda_add_actions.toggle();
 				
 				var dropdown_id = jQuery(this).attr('data-dropdown-id');
@@ -235,8 +241,10 @@ var InboundRulesJs = ( function() {
 			jQuery('body').on( 'click' , '.add-action-filter' , function() {
 				
 				/* Add spinner to button */
-				InboundRulesJs.ladd_add_action_filters = Ladda.create(document.querySelector( '.add-action-filter' ));
-				InboundRulesJs.ladd_add_action_filters.toggle();
+				if ( typeof InboundRulesJs.ladda_add_action_filters == 'undefined' ) {
+					InboundRulesJs.ladda_add_action_filters = Ladda.create(document.querySelector( '.add-action-filter' ));
+				}
+				InboundRulesJs.ladda_add_action_filters.toggle();
 				
 				var dropdown_id = jQuery(this).attr('data-dropdown-id');
 				var filter_id = jQuery( '#' + dropdown_id ).find( ":selected" ).val();
@@ -345,8 +353,8 @@ var InboundRulesJs = ( function() {
 			jQuery('.action-block-filters-container').accordion('refresh');
 			
 			/* Stop spinner */
-			if ( typeof InboundRulesJs.ladd_add_action_filters != 'undefined' ) {
-				InboundRulesJs.ladd_add_action_filters.toggle();
+			if ( typeof InboundRulesJs.ladda_add_action_filters != 'undefined' ) {
+				InboundRulesJs.ladda_add_action_filters.toggle();
 			}
 			
 		},		
@@ -386,8 +394,10 @@ var InboundRulesJs = ( function() {
 		*  Loads the filters available for the selected trigger
 		*/
 		load_trigger_filters: function() {
-			/* enabable processing anaimation */		
-			this.ladda_trigger_filters = Ladda.create(document.querySelector( '#add-trigger-filter-button' ));
+			/* enabable processing anaimation */
+			if ( typeof InboundRulesJs.ladda_trigger_filters == 'undefined' ) {
+				this.ladda_trigger_filters = Ladda.create(document.querySelector( '#add-trigger-filter-button' ));
+			}
 			this.ladda_trigger_filters.toggle();
 			
 			this.trigger = jQuery('#trigger-dropdown').find(":selected").val();
@@ -440,8 +450,10 @@ var InboundRulesJs = ( function() {
 			
 			/* enabable processing anaimation */
 			if ( jQuery('.add-action-filter').length ) {
-				this.ladda_add_action_filters = Ladda.create(document.querySelector( '.add-action-filter' ));
-				this.ladda_add_action_filters.toggle();
+				if ( typeof InboundRulesJs.ladda_add_action_filters == 'undefined' ) {
+					InboundRulesJs.ladda_add_action_filters = Ladda.create(document.querySelector( '.add-action-filter' ));
+				}
+				InboundRulesJs.ladda_add_action_filters.toggle();
 			}
 			
 			this.trigger = jQuery('#trigger-dropdown').find(":selected").val();
@@ -504,8 +516,10 @@ var InboundRulesJs = ( function() {
 		load_trigger_actions: function() {
 			/* enabable processing anaimation */
 			if ( document.querySelector( '.add-action' ) ) {
-				this.ladda_add_actions = Ladda.create(document.querySelector( '.add-action' ));
-				this.ladda_add_actions.toggle();
+				if ( typeof InboundRulesJs.ladda_add_actions == 'undefined' ) {
+					InboundRulesJs.ladda_add_actions = Ladda.create(document.querySelector( '.add-action' ));
+				}
+				InboundRulesJs.ladda_add_actions.toggle();
 			}
 			
 			this.trigger = jQuery('#trigger-dropdown').find(":selected").val();

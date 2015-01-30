@@ -617,15 +617,15 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 				wp_enqueue_style( 'bootstrap-css' );
 
 				/* Spin.min.js - For button loading effect */
-				wp_register_script( 'spin-js' , INBOUND_AUTOMATION_URLPATH .'includes/BootStrap/js/spin.min.js');
+				wp_register_script( 'spin-js' , INBOUND_AUTOMATION_URLPATH .'includes/Ladda/spin.min.js');
 				wp_enqueue_script( 'spin-js' );
 
 				/* Ladda.min.js - For button loading effect*/
-				wp_register_script( 'ladda-js' , INBOUND_AUTOMATION_URLPATH .'includes/BootStrap/js/ladda.min.js');
+				wp_register_script( 'ladda-js' , INBOUND_AUTOMATION_URLPATH .'includes/Ladda/ladda.min.js');
 				wp_enqueue_script( 'ladda-js' );
 
 				/* Load FontAwesome */
-				wp_register_style( 'ladda-css' , INBOUND_AUTOMATION_URLPATH . 'includes/BootStrap/css/ladda-themeless.min.css');
+				wp_register_style( 'ladda-css' , INBOUND_AUTOMATION_URLPATH . 'includes/Ladda/ladda-themeless.min.css');
 				wp_enqueue_style( 'ladda-css' );
 
 				/* Load FontAwesome */
