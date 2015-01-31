@@ -296,7 +296,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			global $inbound_automation_logs, $post;
 
 			$logs = array_reverse( $inbound_automation_logs->get_logs( $post->ID ) , true );
-
+			
 			?>
 			<style>
 				.tr-log-entry-content {
@@ -369,9 +369,12 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						<th class=" sort-header" id='th-log-expand'>Expand</th>
 					</tr>
 					<?php
-
+					$i=0;
 					foreach ($logs as $key => $log) {
 
+						if ($i>50) {
+							break;
+						}
 						echo '<tr class="tr-log-entry"	data-id="'.$key.'">';
 						echo '	<td class="td-log log-title">'.$key.'</td>';
 						echo '	<td class="td-log log-title">'.$log['log_title'].'</td>';
@@ -385,6 +388,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						echo '	</td>';
 						echo '</td>';
 						echo '</tr>';
+						$i++;
 					}
 
 					?>
