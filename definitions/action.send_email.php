@@ -86,7 +86,7 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 		* @param ARRAY $trigger_data action filters
 		* @param ARRAY $rule_id rule id
 		*/
-		public static function run_action( $action , $trigger_data , $rule_id ) {
+		public static function run_action( $action , $trigger_data ) {
 			
 			//error_log( print_r( $action , true ) );
 			//error_log( print_r( $trigger_data , true ) ); 
@@ -159,7 +159,8 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 				__( 'Send Email' , 'inbound-pro') , 
 				'<h2>'.__('Mandrill Response', 'inbound-pro') .'</h2><pre>'.print_r($response,true).'</pre>' .
 				'<h2>'.__('Action Settings' , 'inbound-pro') .'</h2><pre>'. print_r($action,true).print_r($filter,true) .'</pre>',
-				$rule_id ,
+				$action['rule_id'] ,
+				$action['job_id'] ,
 				'action_event' 
 			);
 			

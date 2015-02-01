@@ -362,11 +362,12 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 			<div class='nav-container nav-hide logs-container' id='logs-container' >
 				<table class='tablesorter'>
 					<tr>
-						<th class=" sort-header" id='th-log-id'>Log ID</th>
-						<th class=" sort-header" id='th-log-title'>Log Title</th>
-						<th class=" sort-header" id='th-log-date'>Log Date</th>
-						<th class=" sort-header" id='th-log-date'>Log Type</th>
-						<th class=" sort-header" id='th-log-expand'>Expand</th>
+						<th class=" sort-header" id='th-log-id'><?php _e( 'Log ID' , 'inbound-pro' ); ?></th>
+						<th class=" sort-header" id='th-log-title'><?php _e( 'Log Title' , 'inbound-pro' ); ?></th>
+						<th class=" sort-header" id='th-log-date'><?php _e( 'Log Date' , 'inbound-pro' ); ?></th>
+						<th class=" sort-header" id='th-log-date'><?php _e( 'Job ID' , 'inbound-pro' ); ?></th>
+						<th class=" sort-header" id='th-log-date'><?php _e( 'Log Type' , 'inbound-pro' ); ?></th>
+						<th class=" sort-header" id='th-log-expand'><?php _e( 'Expand' , 'inbound-pro' ); ?></th>
 					</tr>
 					<?php
 					$i=0;
@@ -379,6 +380,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						echo '	<td class="td-log log-title">'.$key.'</td>';
 						echo '	<td class="td-log log-title">'.$log['log_title'].'</td>';
 						echo '	<td class="td-log log-datetime">'.$log['log_datetime'].'</td>';
+						echo '	<td class="td-log log-datetime">'.$log['job_id'].'</td>';
 						echo '	<td class="td-log log-datetime">'.$log['log_type'].'</td>';
 						echo '	<td class="td-log log-datetime"><a href="#" class="toggle-log-content" data-id="'.$key.'">+/-</a></td>';
 						echo '</tr>';

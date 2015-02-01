@@ -63,7 +63,11 @@ if ( !class_exists( 'Inbound_Automation_Action_Wait' ) ) {
 			
 			$action['run_date'] = date("Y-m-d H:i:s", $futureDate);
 			
-			inbound_record_log(  'Action Event - Wait' , 'Scheduling Next Action to Run at: ' . $action['run_date'] . ' <h2>Action Settings</h2> ' . json_encode( $action ) , $action['rule_id'] , 'action_event' );
+			inbound_record_log(  
+				__( 'Wait' , 'inbound-pro') , 
+				__( 'Scheduling Next Action to Run at:' , 'inbound-pro' ) . $action['run_date'] . 
+				'<h2>'.__( 'Action Settings' , 'inbound-pro' ) .'</h2> ' . print_r( $action , true ) , $action['rule_id'] , $action['job_id'] , 'action_event' 
+			);
 			
 			return $action;
 			

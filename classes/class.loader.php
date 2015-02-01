@@ -416,7 +416,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 			$message .= "<p><h2>". __('Trigger Data:' , 'inbound-pro' ) ."</h2> <br> <pre>". print_r( $arguments , true) . '</pre></p>';
 
 
-			inbound_record_log( 'Trigger Event' , $message , $rule->ID , 'trigger_event' );
+			inbound_record_log( __( 'Trigger Fired' , 'inbound-pro' ) , $message , $rule->ID , '',  'trigger_event' );
 		}
 
 		/*
@@ -430,7 +430,7 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 			$message .= "<p><h2>". __('Trigger Data:' , 'inbound-pro' )."</h2> <br> <pre>". print_r( $arguments , true ) . '</pre></p>';
 
 
-			inbound_record_log( __( 'Schedule Event' , 'inbound-pro' ) , $message , $rule->ID , 'schedule_event' );
+			inbound_record_log( __( 'Scheduling Job' , 'inbound-pro' ) , $message , $rule->ID , '', 'schedule_event' );
 		}
 
 		/**

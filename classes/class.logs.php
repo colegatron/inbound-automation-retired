@@ -24,12 +24,13 @@ class Inbound_Logging_Automation {
 	/*
 	* Create new log entry
 	*/
-	public function add( $title = '', $message = '', $rule_id, $type = null ) {
+	public function add( $title = '', $message = '', $rule_id, $job_id ,  $type) {
 		
 		$log_data = array(
 			'log_title' 	=> $title,
 			'log_content'	=> base64_encode($message),
 			'rule_id'		=> $rule_id,
+			'job_id'		=> $job_id,
 			'log_type'		=> $type,
 			'log_datetime'	=> date( __('Y-m-d H:i:s' , 'ma' ) , current_time( 'timestamp', 0 ) )
 		);
@@ -101,8 +102,8 @@ $GLOBALS['inbound_automation_logs'] = new Inbound_Logging_Automation();
  * Record a log entry
  * This is just a simple wrapper function for the log class add() function
 */
-function inbound_record_log( $title = '', $message = '', $rule_id = 0, $type = null ) {
+function inbound_record_log( $title = '', $message = '', $rule_id = 0, $job_id = '',  $type = null ) {
 	global $inbound_automation_logs;
-	$inbound_automation_logs->add( $title, $message, $rule_id, $type );
+	$inbound_automation_logs->add( $title, $message, $rule_id, $job_id, $type );
 
 }

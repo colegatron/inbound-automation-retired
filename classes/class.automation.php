@@ -75,9 +75,10 @@ class Inbound_Automation_Processing {
 			/* run job */
 			self::run_job();			
 
+			//error_log( print_r(self::$job , true));
+			
 			/* unset completed job from queue */
 			self::unset_completed_job();			
-			
 			
 			/* Update Rule Queue After Completed Job */
 			self::update_queue();
@@ -113,7 +114,7 @@ class Inbound_Automation_Processing {
 		$action_blocks =  self::$job['rule']['action_blocks'];
 		
 		/* Tell Log We Are Running An Job */
-		inbound_record_log(  'Start Job' , '<pre>' . print_r( self::$job , true ) . '</pre>', self::$job['rule']['ID'] , 'processing_event' );
+		inbound_record_log(  'Starting Job' , '<pre>' . print_r( self::$job , true ) . '</pre>', self::$job['rule']['ID'] , self::$job_id , 'processing_event' );
 		
 		foreach ( self::$job['rule']['action_blocks'] as $block_id => $block ) {
 			
@@ -180,10 +181,15 @@ class Inbound_Automation_Processing {
 		}
 		
 		foreach ($block['actions'][ $type ] as $action_id => $action) {
-
+			
+			/* pass on action 'pointer' or 'run_date' */
+			if ( !is_int($action_id) ) {
+				continue;
+			}
+			
 			/* Check if Action Has Memory Set - Advance to Next Action if Necessary */
 			if ( isset($block['actions'][ $type ]['pointer'])  && $block['actions'][ $type ]['pointer'] > $action_id ) {
-				continue;
+				//continue;
 			}			
 			
 			/* Set Current Action Id Into Memory */
@@ -191,12 +197,19 @@ class Inbound_Automation_Processing {
 			
 			/* Check if Current Actions Meta Has Schedule Set Abandon Actions if Time Condition Not Met */
 			if ( isset($block['actions'][ $type ]['run_date']) && ( strtotime($block['actions'][ $type ]['run_date']) > strtotime( current_time('Y-m-d H:i:s') ) ) ) {
-				inbound_record_log(  __( 'Action Delayed' , 'inbound-pro' ) , 'Action Set to Be Performed on ' . $block['actions'][ $type ]['run_date'] . '<h2>Raw Action Block Data</h2><pre>' . print_r($block , true ) . '</pre>', self::$job['rule']['ID'] , 'delay_event' );
+				inbound_record_log(  
+					__( 'Action Delayed' , 'inbound-pro' ) , 
+					'Action Set to Be Performed on ' . $block['actions'][ $type ]['run_date'] . '<h2>Raw Action Block Data</h2><pre>' . print_r($block , true ) . '</pre>', 
+					self::$job['rule']['ID'] , 
+					self::$job_id , 
+					'delay_event' 
+				);
 				break;
 			} 
 			
 			/* Set Additional Data into Action Settings Array */
 			$block['actions'][ $type ][ $action_id ]['rule_id'] = self::$job['rule']['ID'];
+			$block['actions'][ $type ][ $action_id ]['job_id'] = self::$job_id;
 			
 			/* Run Action */
 			$block['actions'][ $type ][ $action_id ] = self::run_action( $block['actions'][ $type ][ $action_id ] );
@@ -270,7 +283,8 @@ class Inbound_Automation_Processing {
 				__( 'Evaluating Action Block' , 'inboun-pro' ) , 
 				'<h2>'. __( 'Action Filter Evaluation' , 'inbound-pro' ) .'</h2><p>'. __( 'Action Evaluation Result:' , 'inbound-pro' ) . $evaluate .'</p><p>'. __( 'Action Evaluation Nature:' , 'inbound-pro' ) .'<br> ' . $block['action_block_filters_evaluate'] . '</p><p>' . __( 'Action Evaluation Debug Data:' , 'inbound-pro' ) .'<br> <pre>' . print_r( $evals , true )  . '</pre></p><pre>'.print_r( $block , true ).'</pre>' 
 				, self::$job['rule']['ID'] 
-				, 'evaluation_event' 
+				, self::$job_id 
+				,'evaluation_event' 
 			);
 			
 			return $evaluate;			
@@ -467,6 +481,7 @@ class Inbound_Automation_Processing {
 				__( 'Job Completed' , 'inbound-pro' ) , 
 				__('This job has successfully completed all it\'s tasks.' , 'inbound-pro' ),
 				self::$job['rule']['ID'] , 
+				self::$job_id ,
 				'processing_event' 
 			);
 			
@@ -475,10 +490,11 @@ class Inbound_Automation_Processing {
 			/* Tell Log The Job Has Completed */
 			$remaining_actions = self::$job['rule']['action_blocks'] ;
 			inbound_record_log(  
-				__( 'Tasks Remain' , 'inbound-pro' ) ,
+				__( 'Ending Job - Tasks Remain' , 'inbound-pro' ) ,
 				'<h2>Actions Left</h2> <pre>' . print_r( $remaining_actions , true ) .'</pre><h2>Raw Job Data</h2><pre>' . print_r( self::$job , true ) . '</pre>', 
 				self::$job['rule']['ID'] ,
-				'processing_event' 
+				self::$job_id,
+				'processing_event'
 			);
 			
 			Inbound_Automation_Processing::$queue[ self::$job_id ] = self::$job;
