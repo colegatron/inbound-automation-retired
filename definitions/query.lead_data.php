@@ -11,7 +11,9 @@ if ( !class_exists( 'Inbound_Automation_Query_Lead' ) ) {
 
 	class Inbound_Automation_Query_Lead {
 		
-		/* Build Query Definitions */
+		/**
+		*  	Build Query Loopup Dataset 
+		*/
 		public static function get_key_map( ) {
 			
 			$queries['page_views'] = __( 'Page Views' , 'ma' );
@@ -21,32 +23,16 @@ if ( !class_exists( 'Inbound_Automation_Query_Lead' ) ) {
 			return $queries;
 		}
 		
-		/* Get target value from array of arguments sent by trigger given a key to search 
-		* @param arguments ARRAY( ARRAY , ARRAY ) 
-		*
-		* @return lead_id INT
-		*/
-		public static function get_target_from_arguments( $target , $arguments ) {
-			
-			foreach ( $arguments as  $argument ) {
-				if ( array_key_exists( $target , $argument) ) {
-					return $argument[ $target ];
-				}
-			}
-			
-			return false;
-		}
-		
 		
 		/* Gets Page View Count for Lead 
-		* @param arguments ARRAY of arguments sent over by trigger. One of the arguments must contain key 'lead_id' 
+		* @param ARRAY $trigger_data dataset of arguments sent over by trigger. One of the arguments must contain key 'lead_id' 
 		*
 		* @return page_views INT
 		*/ 
 		
-		public static function query_page_views( $arguments ) {
-			
-			$lead_id = Inbound_Automation_Query_Lead::get_target_from_arguments( 'lead_id' , $arguments );
+		public static function query_page_views( $trigger_data ) {
+
+			$lead_id = $trigger_data[0]['id'];
 				
 			if ( !$lead_id ) {
 				return null;
@@ -67,14 +53,13 @@ if ( !class_exists( 'Inbound_Automation_Query_Lead' ) ) {
 		*
 		* @return conversions INT
 		*/
-		public static function query_conversions(  $arguments ) {
+		public static function query_conversions(  $trigger_data ) {
 			
-			$lead_id = get_target_from_arguments( 'lead_id' , $arguments );
+			$lead_id = $trigger_data[0]['id'];
 			
 			if ( !$lead_id ) {
 				return null;
-			}
-			
+			}			
 			
 			$conversions = get_post_meta( $lead_id ,'wpleads_conversion_count', true );
 			
@@ -90,9 +75,9 @@ if ( !class_exists( 'Inbound_Automation_Query_Lead' ) ) {
 		*
 		* @return page_views INT
 		*/
-		public static function query_conversion_rate( $arguments ) {
+		public static function query_conversion_rate( $trigger_data ) {
 			
-			$lead_id = get_target_from_arguments( 'lead_id' , $arguments );
+			$lead_id =  $trigger_data[0]['id'];
 			
 			if ( !$lead_id ) {
 				return null;

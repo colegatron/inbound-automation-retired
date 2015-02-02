@@ -104,14 +104,6 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 						'results_per_page' => -1,
 						'fields' => 'ids'
 					);
-
-					$results = Inbound_API::leads_get( $params );
-					
-					if (!$results) {
-						return;
-					}
-					
-					$leads = $results->posts;
 					
 					/* get variant marker */
 					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );
@@ -125,7 +117,7 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 					/* send email */
 					$response = $Inbound_Mail_Daemon->send_solo_email( array(
 						'email_address' => $trigger_data[0]['email'],
-						'lead_id' => $leads[0],
+						'lead_id' => $trigger_data[0]['id'],
 						'email_id' => $action['email_id'],
 						'tags' => array( 'automated' ),
 						'vid' => $vid,

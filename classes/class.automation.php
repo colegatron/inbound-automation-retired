@@ -248,7 +248,7 @@ class Inbound_Automation_Processing {
 	* Evaluate Action Block 
 	*/
 	public static function evaluate_action_block( $block ) {
-	
+		
 		/* Automatically Evaluate True When There Is No Conditionals */
 		if ( $block['action_block_type'] == 'actions' ) {
 			return true;
@@ -256,6 +256,10 @@ class Inbound_Automation_Processing {
 			
 		/* Check Action Filters */
 		if ( isset( $block['filters'] )  && $block['filters'] && $filters = $block['filters'] ) {
+			global $Inbound_Automation_Loader;
+			
+			/* load trigger db filters */
+			self::$definitions = $Inbound_Automation_Loader;
 			
 			$evaluate = true;
 			$evals = array();
@@ -268,7 +272,7 @@ class Inbound_Automation_Processing {
 				$evals[] = self::evaluate_filter( $db_lookup_filter , $filter );
 				
 			}			
-		
+
 			/* Return Final Evaluation Decision Based On Eval Nature */
 			$evaluate = self::evaluate_filters( $block['action_block_filters_evaluate'] , $evals );
 			
@@ -281,12 +285,15 @@ class Inbound_Automation_Processing {
 			/* Log Evaluation Attempt */
 			inbound_record_log(  
 				__( 'Evaluating Action Block' , 'inboun-pro' ) , 
-				'<h2>'. __( 'Action Filter Evaluation' , 'inbound-pro' ) .'</h2><p>'. __( 'Action Evaluation Result:' , 'inbound-pro' ) . $evaluate .'</p><p>'. __( 'Action Evaluation Nature:' , 'inbound-pro' ) .'<br> ' . $block['action_block_filters_evaluate'] . '</p><p>' . __( 'Action Evaluation Debug Data:' , 'inbound-pro' ) .'<br> <pre>' . print_r( $evals , true )  . '</pre></p><pre>'.print_r( $block , true ).'</pre>' 
+				'<h2>'. __( 'Evaluated:' , 'inbound-pro' ) .'</h2><pre>'. $evaluate .'</pre>' .
+				'<h2>'. __( 'Action Evaluation Nature:' , 'inbound-pro' ) .'</h2><pre>' . $block['action_block_filters_evaluate'] . '</pre>' .
+				'<h2>' . __( 'Action Evaluation Debug Data:' , 'inbound-pro' ) .'</h2> <pre>' . print_r( $evals , true )  . '</pre>' .
+				'<h2>'. __('Action Block' , 'inbound-pro' ) .'</h2><pre>'.print_r( $block , true ).'</pre>' 
 				, self::$job['rule']['ID'] 
 				, self::$job_id 
 				,'evaluation_event' 
 			);
-			
+
 			return $evaluate;			
 			
 		} else {
@@ -344,7 +351,7 @@ class Inbound_Automation_Processing {
 
 			case 'less-than' :
 
-				if ( $filter['action_filter_value'] > $db_lookup ) {
+				if ( $db_lookup < $filter['action_filter_value'] ) {
 					$eval = true;
 				}
 

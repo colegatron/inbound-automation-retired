@@ -483,7 +483,8 @@ if ( !class_exists( 'Inbound_Automation_Loader' ) ) {
 	*  Loads inbound automation defintitions into init at priority 20
 	*/
 	function inbound_automation_load_definitions() {
-		return Inbound_Automation_Loader::init();
+		$GLOBALS['Inbound_Automation_Loader'] = Inbound_Automation_Loader::init();
+		return $GLOBALS['Inbound_Automation_Loader'];
 	}
 	
 	/**

@@ -385,7 +385,7 @@ if ( !class_exists( 'Inbound_Metaboxes_Automation' ) ) {
 						echo '	<td class="td-log log-datetime"><a href="#" class="toggle-log-content" data-id="'.$key.'">+/-</a></td>';
 						echo '</tr>';
 						echo '<tr class="tr-log-entry-content" id="log-content-'.$key.'" data-id="'.$key.'">';
-						echo '	<td colspan=4 class="td-log-entry-content"data-id="'.$key.'" >';
+						echo '	<td colspan=6 class="td-log-entry-content"data-id="'.$key.'" >';
 						echo 		stripslashes(base64_decode($log['log_content']));
 						echo '	</td>';
 						echo '</td>';
