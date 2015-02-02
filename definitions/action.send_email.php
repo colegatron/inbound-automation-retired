@@ -92,6 +92,8 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 			//error_log( print_r( $trigger_data , true ) ); 
 			$Inbound_Templating_Engine = Inbound_Templating_Engine();
 			
+			/* Load sender class */
+			$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();	
 			
 			switch ($action['send_to']) {
 				
@@ -106,10 +108,7 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 					);
 					
 					/* get variant marker */
-					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );
-					
-					/* Load sender class */
-					$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();					
+					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );				
 				
 					/* check for lead lists */
 					$lead_lists = (isset($trigget_data[0]['lead_lists'])) ? $trigget_data[0]['lead_lists'] : array();
@@ -134,7 +133,7 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 						'email_address' => $action['custom_email'],
 						'email_id' => $action['email_id'],
 						'vid' => $vid,
-						'tags' => 'automated'
+						'tags' => array('automated')
 					));
 					BREAK;
 				case 'lead_list':
