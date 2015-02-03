@@ -92,12 +92,12 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 			//error_log( print_r( $trigger_data , true ) ); 
 			$Inbound_Templating_Engine = Inbound_Templating_Engine();
 			
-			/* Load sender class */
-			$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();	
 			
 			switch ($action['send_to']) {
 				
-				case 'lead':
+				case 'lead':					
+					/* Load sender class */
+					$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();	
 					
 					/* get lead id */
 					$params = array(	
@@ -125,6 +125,9 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 					
 					BREAK;
 				case 'custom':
+					/* Load sender class */
+					$Inbound_Mail_Daemon = new Inbound_Mail_Daemon();	
+					
 					/* get variant marker */
 					$vid = Inbound_Mailer_Variations::get_next_variant_marker( $action['email_id'] );
 					
@@ -139,8 +142,8 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 				case 'lead_list':
 					$Inbound_Mailer_Scheduling = new Inbound_Mailer_Scheduling;
 					$Inbound_Mailer_Scheduling->recipients = $action['lead_lists'];
-					$Inbound_Mailer_Scheduling->schedule_email( $action['email_id'] );
-					
+					$response = $Inbound_Mailer_Scheduling->schedule_email( $action['email_id'] );
+					$response = __( sprintf( '%s emails have been scheduled' , $response ) , 'inbound-pro' );
 					BREAK;
 				
 			

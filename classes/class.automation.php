@@ -236,7 +236,7 @@ class Inbound_Automation_Processing {
 	* Run Action
 	*/
 	public static function run_action( $action  ) {
-	
+
 		$class = new $action['action_class_name'];
 		$action = $class->run_action( $action  , self::$job['arguments'] , self::$job['rule']['ID'] );
 		
