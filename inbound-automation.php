@@ -167,6 +167,12 @@ if (!class_exists('Inbound_Automation_Plugin')) {
 		Inbound_Automation_Plugin::fail_php_version();
 	}
 
+	/**
+	*  Checks if Inbound Automation is active
+	*/
+	function inbound_automation_check_active() {
+		return 1;
+	}
 	
 }
 
