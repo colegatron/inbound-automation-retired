@@ -53,7 +53,7 @@ if ( !class_exists('Inbound_Automation_Post_Type') ) {
 				'show_in_nav_menus'	=> false,
 				'capability_type' => 'post',
 				'hierarchical' => false,
-				'menu_position' => null,
+				'menu_position' => 35,
 				'supports' => array('title')
 			);
 
