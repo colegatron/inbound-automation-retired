@@ -6,9 +6,9 @@
 *  
 */
 
-if ( !class_exists('MA_Activation_Update_Routines') ) {
+if ( !class_exists('Inbound_Automation_Activation_Update_Routines') ) {
 
-	class MA_Activation_Update_Routines {
+	class Inbound_Automation_Activation_Update_Routines {
 		
 
 	}

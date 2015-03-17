@@ -106,6 +106,7 @@ if (!class_exists('Inbound_Automation_Plugin')) {
 			switch (is_admin()) :
 				case true :
 					/* loads admin files */
+					include_once('classes/class.activation.php');
 					include_once('classes/class.post-type.automation.php');
 					include_once('classes/class.logs.php');
 					include_once('classes/class.loader.php');

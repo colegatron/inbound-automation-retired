@@ -1,9 +1,9 @@
 <?php
 
 
-if ( !class_exists('MA_Activation') ) {
+if ( !class_exists('Inbound_Automation_Activation') ) {
 
-class MA_Activation {
+class Inbound_Automation_Activation {
 	
 	static $version_wp;
 	static $version_php;
@@ -42,15 +42,20 @@ class MA_Activation {
 	}
 	
 	/**
-	*This method loads public methods from the MA_Activation_Update_Routines class and automatically runs them if they have not been run yet. 
+	*This method loads public methods from the Inbound_Automation_Activation_Update_Routines class and automatically runs them if they have not been run yet. 
 	* We use transients to store the data, which may not be the best way but I don't have to worry about save/update/create option and the auto load process 
 	*/
 
 	public static function run_updates() {
 	
 		
-		/* Get list of updaters from MA_Activation_Update_Routines class */
-		$updaters = get_class_methods('MA_Activation_Update_Routines');
+		/* Get list of updaters from Inbound_Automation_Activation_Update_Routines class */
+		$updaters = get_class_methods('Inbound_Automation_Activation_Update_Routines');
+
+		/* return if no routines */
+		if (!$updaters) {
+			return;
+		}
 		
 		/* Get transient list of completed update processes */
 		$completed = ( get_option( 'ma_completed_upgrade_routines' ) ) ?  get_option( 'ma_completed_upgrade_routines' ) : array();
@@ -61,7 +66,7 @@ class MA_Activation {
 		/* Loop through updaters and run updaters that have not been ran */
 		foreach ( $remaining as $updater ) {
 			
-			MA_Activation_Update_Routines::$updater();
+			Inbound_Automation_Activation_Update_Routines::$updater();
 			$completed[] = $updater;
 			
 		}
@@ -84,8 +89,13 @@ class MA_Activation {
 			exit;
 		}
 		
-		/* Get list of updaters from MA_Activation_Update_Routines class */
-		$updaters = get_class_methods('MA_Activation_Update_Routines');
+		/* Get list of updaters from Inbound_Automation_Activation_Update_Routines class */
+		$updaters = get_class_methods('Inbound_Automation_Activation_Update_Routines');
+			
+		/* return if no routines */
+		if (!$updaters) {
+			return;
+		}
 		
 		/* Get transient list of completed update processes */
 		$completed = ( get_option( 'ma_completed_upgrade_routines' ) ) ?  get_option( 'ma_completed_upgrade_routines' ) : array();
@@ -210,10 +220,10 @@ class MA_Activation {
 }
 
 /* Add Activation Hook */
-register_activation_hook( WP_CTA_FILE , array( 'MA_Activation' , 'activate' ) );
-register_deactivation_hook( WP_CTA_FILE , array( 'MA_Activation' , 'deactivate' ) );
+register_activation_hook( INBOUND_AUTOMATION_FILE , array( 'Inbound_Automation_Activation' , 'activate' ) );
+register_deactivation_hook( INBOUND_AUTOMATION_FILE , array( 'Inbound_Automation_Activation' , 'deactivate' ) );
 
 /* Add listener for uncompleted upgrade routines */
-add_action( 'admin_init' , array( 'MA_Activation' , 'run_upgrade_routine_checks' ) );
+add_action( 'admin_init' , array( 'Inbound_Automation_Activation' , 'run_upgrade_routine_checks' ) );
 
 }
