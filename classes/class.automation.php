@@ -433,33 +433,29 @@ class Inbound_Automation_Processing {
 	*/
 	public static function unset_completed_actions() {
 
+
 		/* loop through action blocks and remove blocks with no more queued actions */
-		foreach ( self::$job['rule']['action_blocks'] as $block_id => $block ) {
+		foreach ( self::$job['rule']['action_blocks'] as $i => $block ) {
 
-			/* Remove Action Lists that Are Empty */
-			foreach ($block['actions'] as $type => $actions) {
+			unset($block['actions']['then']['pointer']);
+			unset($block['actions']['then']['run_date']);
 
-				unset($actions['pointer']);
-				unset($actions['run_date']);
-				if ( count($actions) < 1 ) {
-					unset( self::$job['rule']['action_blocks'][ $block_id ]['actions'][ $type ] );
-				}
+			if (self::$job['rule']['action_blocks'][$i]['evaluated']) {
+				unset(self::$job['rule']['action_blocks'][$i]['actions']['else']);
 			}
 
-            /* Safety backup -  if 'then' actions exausted also delete else actions */
-            if ( empty(self::$job['rule']['action_blocks'][ $block_id ]['actions']['then'] ) && self::$job['rule']['action_blocks'][$block_id]['evaluated'] == 'true' ) {
-                unset( self::$job['rule']['action_blocks'][ $block_id ]['actions']['else' ] );
-            }
-
-            /* Safety backup -  if 'else' actions exausted also delete then actions */
-            if ( empty(self::$job['rule']['action_blocks'][ $block_id ]['actions']['else'] ) && self::$job['rule']['action_blocks'][$block_id]['evaluated'] == 'false' ) {
-                unset( self::$job['rule']['action_blocks'][ $block_id ]['actions']['then' ] );
-            }
-
-			/* Remove Actionless Action Blocks */
-			if ( count(self::$job['rule']['action_blocks'][ $block_id ]['actions']) < 1 ) {
-				unset( self::$job['rule']['action_blocks'][ $block_id ] );
+			if (count($block['actions']['then']) < 1) {
+				unset(self::$job['rule']['action_blocks'][$i]['actions']['then']);
 			}
+
+			if (
+				count($block['actions']['then']) < 1
+				&&
+				( !isset($block['actions']['else']) || count($block['actions']['else']) < 1 )
+			) {
+				unset(self::$job['rule']['action_blocks']);
+			}
+
 		}
 	}
 
@@ -470,7 +466,7 @@ class Inbound_Automation_Processing {
 	public static function unset_completed_job( ) {
 
 		/* Remove Job from Rule Queue if Empty */
-		if (!self::$job['rule']['action_blocks']) {
+		if (!isset(self::$job['rule']['action_blocks']) || !self::$job['rule']['action_blocks']) {
 
 			unset( Inbound_Automation_Processing::$queue[ self::$job_id ] );
 
