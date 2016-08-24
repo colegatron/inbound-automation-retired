@@ -141,8 +141,6 @@ if ( !class_exists('Inbound_Automation_Post_Type') ) {
 		 * load admin scripts and styles
 		 */
 		public static function enqueue_admin_scripts( $hook ) {
-			wp_enqueue_style( 'automation-global-css' , INBOUND_AUTOMATION_URLPATH . 'assets/css/admin/style.css' );
-
 			$screen = get_current_screen();
 
 			if (isset($screen) && $screen->id == 'edit-automation' ) {
