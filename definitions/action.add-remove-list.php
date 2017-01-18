@@ -157,6 +157,6 @@ if ( !class_exists( 'Inbound_Automation_Action_Add_Remove_List' ) ) {
     }
 
     /* Load Action */
-    $Inbound_Automation_Action_Add_Remove_List = new Inbound_Automation_Action_Add_Remove_List();
+    new Inbound_Automation_Action_Add_Remove_List();
 
 }
