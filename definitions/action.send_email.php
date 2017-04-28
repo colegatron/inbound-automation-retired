@@ -91,12 +91,26 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 		 */
 		public static function run_action( $action , $trigger_data ) {
 
-			//error_log( print_r( $action , true ) );
 
 			$Inbound_Templating_Engine = Inbound_Templating_Engine();
 
 			$trigger_data = apply_filters( 'action/send_email/trigger_data' , $trigger_data );
-			
+
+			/* if contains a post_object and the lock is enabled then exit */
+			if (isset($trigger_data['post_object']['ID']) && $trigger_data['post_object']['ID']) {
+				if (get_post_meta($trigger_data['post_object']['ID'] , 'inbound_automation_email_sent' , true )) {
+					inbound_record_log(
+						__( 'Email Blocked - Post Locked' , 'inbound-pro') ,
+						'<h2>'.__('Details', 'inbound-pro') .'</h2><pre>'.__( 'It seems this email has been manually locked or has already been sent via an automation rule once.' , 'inbound-pro' ).'</pre>' .
+						'<h2>'.__('Action Settings' , 'inbound-pro') .'</h2><pre>'. print_r($action,true).'</pre><h2>'.__('Action Settings' , 'inbound-pro') .'</h2><pre>'.print_r($trigger_data,true) .'</pre>',
+						$action['rule_id'] ,
+						$action['job_id'] ,
+						'action_event'
+					);
+					return;
+				}
+			}
+
 			switch ($action['send_to']) {
 
 				case 'lead':
@@ -175,6 +189,11 @@ if ( !class_exists( 'Inbound_Automation_Action_Send_Email' ) ) {
 					BREAK;
 
 
+			}
+
+			/* update post object lock if  post object detected */
+			if (isset($trigger_data['post_object']['ID']) && $trigger_data['post_object']['ID']) {
+				update_post_meta($trigger_data['post_object']['ID'] , 'inbound_automation_email_sent' , true );
 			}
 
 			inbound_record_log(
